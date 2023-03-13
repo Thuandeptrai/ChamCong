@@ -1,19 +1,13 @@
 import authRouter from './auth.router';
 import userRouter from './user.router';
-import orderPageRouter from './orderPage.router';
 import supportRouter from './support.router';
 import serviceTemplateRouter from './serviceTemplate.router';
-import listVMSRouter from './listVMS.router';
 import ServiceRouter from './service.router';
 
 import productRouter from './product.router';
 import clientOrderRouter from './clientOrder.router';
-import paymentMethodRouter from './paymentMethod.router';
-import clientTicketRouter from './clientTicket.router';
-import ActionHistoryRouter from './actionHistory.router';
 import DepartmentRouter from './department.router';
 import NotificationRouter from './notification.router';
-import invoiceRouter from './invoice.router';
 
 const version = {
   v1: '/api/v1',
