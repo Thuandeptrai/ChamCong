@@ -239,35 +239,14 @@ export const signUp = async (
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST)
     }
 
-    const newUser: any = await callApiViettel({
-      ...req.body,
-      call: 'addClient',
-    });
-    if (!newUser?.success) {
-      throw new Error(newUser.error.toString());
-    }
 
-    const userDetail = await callApiViettel({
-      id: newUser.client_id,
-      call: 'getClientDetails',
-    });
-    const syncUser = await UserModel.create(userDetail.client);
+    
+    const syncUser = await UserModel.create(schema);
 
-    const token = await emailToken.create({
-      user: syncUser.id,
-      token: crypto.randomBytes(32).toString("hex")
-    })
+    
 
 
-    const url = `
-      <p style="font-weight: bold">GOFIBER xin chào quý khách</p>
-      <p>Cảm ơn bạn đã đăng kí tài khoản để sử dụng dịch vụ của GOFIBER</p>
-      <p>Bấm vào nút dưới đây để xác thực tài khoản của bạn</p>
-      <a href="${process.env.BASE_URL}/api/v1/users/${syncUser.id}/verify/${token.token}"><button style="padding: 5px 10px; color: white; background-color: #1890ff; border: none; border-radius: 6px">Xác thực</button></a>
-      <p>Chúc bạn có những trải nghiệm tốt nhất khi sử dụng dịch vụ của GOFIBER</p>
-      `
 
-    const send = await sendMailHelper(syncUser.email, url)
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,

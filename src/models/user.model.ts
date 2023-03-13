@@ -55,7 +55,7 @@ const UserSchema: Schema = new Schema(
     },
     verified: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
   {
