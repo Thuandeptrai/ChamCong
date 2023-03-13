@@ -28,7 +28,7 @@ dotenv.config();
 
 const app = express();
 
-const allowOrigin = ['http://localhost:8078']
+const allowOrigin = ['*']
 
 const corsOption: CorsOptions = {
   credentials: true,
@@ -58,16 +58,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(expressFileUpload())
 app.use(express.static(path.join(__dirname, `public`)))
-app.use(
-  Fingerprint({
-    parameters: [
-      // Defaults
-      Fingerprint.useragent,
-      Fingerprint.acceptHeaders,
-      Fingerprint.geoip,
-    ],
-  })
-);
+
 
 
 useRoutes(app);
@@ -94,67 +85,14 @@ const autoCreateRoles = async () => {
   }
 }
 
-const autoCreateAdminAccount = async () => {
-  try {
-    const getRoleAdmin = await Roles.findOne({ roleName: 'admin' })
-    const check = await userModel.find({ role: getRoleAdmin?._id })
-    const salt = bcrypt.genSaltSync(8)
-    const password = bcrypt.hashSync('123123@', salt)
-    if (!check || check.length == 0) {
-
-      const newUser: any = await callApiViettel({
-        email: 'admin.gofiber@gmail.com',
-        firstname: 'Gofiber',
-        lastname: 'Admin',
-        address1: '131 CN11, Nguyen Van Sang, Phuong Tan Son Nhi, Quan Tan Phu',
-        phonenumber: '01111111111',
-        country: 'VN',
-        role: getRoleAdmin?._id,
-        password: '123123@',
-        password2: '123123@',
-        countryname: 'Viet Nam',
-        credit: 0,
-        call: 'addClient',
-      });
-
-      if (!newUser?.success) {
-        throw new Error(newUser.error.toString());
-      }
-
-      const userDetail = await callApiViettel({
-        id: newUser.client_id,
-        call: 'getClientDetails',
-      });
-
-      const adminUser = await userModel.create({
-        ...userDetail.client,
-        role: getRoleAdmin?._id,
-        verified: true,
-      })
-
-      console.log("Create admin success")
-
-    }
-
-  
-  } catch (error) {
-    console.log(error)
-  }
-}
 
 autoCreateRoles()
-autoCreateAdminAccount()
 dbBackup(process.env.DB_NAME || 'vietstack', process.env.BACKUP_PATH || '/www/wwwroot/vietstack/')
 
 const server = createServer(app);
 
-const io = require('socket.io')(server, {
-  cors: {
-    origin: allowOrigin
-  }
-})
 
-socket(io)
+
 
 // Add your API routes here
 

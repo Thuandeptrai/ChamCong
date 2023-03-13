@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || ('localhost' as string);
 const SERVER_PORT = process.env.SERVER_PORT || (4000 as number);
-const MONGO_URL = 'mongodb://116.103.108.151:27017/go-viettel';
+const MONGO_URL = 'mongodb+srv://thuan:rmk123456@cluster0.upcyp.mongodb.net/?retryWrites=true&w=majority';
 const SERVER = {
   hostname: SERVER_HOSTNAME,
   port: SERVER_PORT,

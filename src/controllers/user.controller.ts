@@ -167,44 +167,18 @@ export const login = async (
         })
       }
 
-      const url = `
-      <p style="font-weight: bold">GOFIBER xin chào quý khách</p>
-      <p>Cảm ơn bạn đã đăng kí tài khoản để sử dụng dịch vụ của GOFIBER</p>
-      <p>Bấm vào nút dưới đây để xác thực tài khoản của bạn</p>
-      <a href="${process.env.BASE_URL}/api/v1/users/${checkExist.id}/verify/${token?.token}"><button style="padding: 5px 10px; color: white; background-color: #1890ff; border: none; border-radius: 6px">Xác thực</button></a>
-      <p>Chúc bạn có những trải nghiệm tốt nhất khi sử dụng dịch vụ của GOFIBER</p>
-    `
-      const send = await sendMailHelper(checkExist.email, url)
-      throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED_ACCOUNT_NOT_VERIFY)
-    }
-    const result = await authentication({
-      username: req.body.username,
-      password: req.body.password,
-      remember: true,
-    });
-    if (!result.data.token) {
-      throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
-    }
-    const updateUserToken = await UserModel.findByIdAndUpdate(
-      checkExist._id,
-      { accesstoken: result.data?.token, refreshtoken: result.data?.refresh },
-      { new: true }
-    ).populate('role');
-
+    
+ 
+    
+  
+  
     const accessToken = jwt.sign(
       { user_id: checkExist._id },
       config.auth.jwtSecretKey,
       { expiresIn: '1d' }
     );
 
-    const response = responseModel(
-      RESPONSE_STATUS.SUCCESS,
-      ResponseMessage.LOGIN_SUCCESS,
-      {
-        user: updateUserToken,
-        accessToken: accessToken,
-      }
-    );
+    }
 
     return res.status(HttpStatusCode.Ok).json(response);
   } catch (error: any) {
@@ -218,13 +192,13 @@ export const signUp = async (
   next: NextFunction
 ) => {
   const schema = Joi.object({
-    firstname: Joi.string().max(8).required(),
-    lastname: Joi.string().max(8).required(),
+    name: Joi.string().max(8).required(),
     password: Joi.string().min(6).max(32).required(),
     password2: Joi.ref('password'),
-    address1: Joi.string().required(),
-    country: Joi.string().required(),
-    phonenumber: Joi.string().required(),
+    employeeNumber:Joi.number().required(),
+    bankName: Joi.string().min(6).max(32).required(),
+    userBankNumber:Joi.string().min(6).max(32).required(),
+    salary:Joi.number().required(),
     email: Joi.string().email(),  
   });
   try {
@@ -238,15 +212,7 @@ export const signUp = async (
     if (checkExistGmail.length > 0) {
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST)
     }
-
-
-    
-    const syncUser = await UserModel.create(schema);
-
-    
-
-
-
+   const syncUser = await UserModel.create(req.body);
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
