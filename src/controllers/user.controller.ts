@@ -21,6 +21,7 @@ import { sendMailHelper } from '../helpers/sendEmail';
 import userModel from '../models/user.model';
 import supportModel from '../models/support.model';
 import servicesModel from '../models/services.model';
+import { hashPassword, verifyPassword } from '../utils/auth';
 
 const NAME_SPACE = 'User';
 
@@ -153,34 +154,21 @@ export const login = async (
       throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
     }
 
-    if (!checkExist.verified) {
-      const checkToken = await emailToken.findOne({ user: checkExist.id })
-      let token = null
-      if (!checkToken) {
-        token = await emailToken.create({
-          user: checkExist.id,
-          token: crypto.randomBytes(32).toString("hex")
-        })
-      } else {
-        token = await emailToken.findOneAndUpdate({ user: checkExist.id }, {
-          token: crypto.randomBytes(32).toString("hex")
-        })
-      }
-
+    const verify  = await verifyPassword(req.body.password, checkExist.password)
     
- 
+    if (!verify) {
+      throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
+    }
     
   
-  
+    
     const accessToken = jwt.sign(
       { user_id: checkExist._id },
       config.auth.jwtSecretKey,
       { expiresIn: '1d' }
     );
 
-    }
-
-    return res.status(HttpStatusCode.Ok).json(response);
+    return res.status(HttpStatusCode.Ok).json(accessToken);
   } catch (error: any) {
     next(error);
   }
@@ -206,13 +194,13 @@ export const signUp = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-
-    const checkExistGmail = await UserModel.find({ email: req.body.email })
+   const  checkExistGmail = await UserModel.find({ email: req.body.email })
 
     if (checkExistGmail.length > 0) {
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST)
     }
-   const syncUser = await UserModel.create(req.body);
+    req.body.password =await hashPassword(req.body.password)
+    const syncUser = await UserModel.create(req.body);
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
@@ -263,6 +251,20 @@ export const getUserDetail = async (
       userDetail
     );
     return res.status(HttpStatusCode.Ok).json(response);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const checkValidToken = async (
+  req: AuthRquest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+
+    return res.status(HttpStatusCode.Ok).json(ResponseMessage.LOGIN_SUCCESS);
   } catch (error) {
     console.log(error);
     next(error);

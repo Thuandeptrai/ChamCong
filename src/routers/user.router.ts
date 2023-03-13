@@ -1,10 +1,12 @@
 import { Router } from 'express';
-import { syncDataUser, getUserBalance, getUserDetail, signUp,getpagingQLUser, getAllUser, verifyTokenEmail, getPaging, addUserCredit } from '../controllers';
+import { syncDataUser, getUserBalance, getUserDetail, signUp,getpagingQLUser, getAllUser, verifyTokenEmail, getPaging, addUserCredit, checkValidToken } from '../controllers';
 import { authenticate, syncDataUserMiddleware } from '../middleware';
 
 const router = Router();
 
 router.get('/detail', authenticate, getUserDetail)
+router.get('/init', authenticate, checkValidToken)
+
 router.post('/sync-data', syncDataUser);
 router.get('/balance',authenticate, getUserBalance)
 router.post('/register', signUp)

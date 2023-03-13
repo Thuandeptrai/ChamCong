@@ -46,72 +46,13 @@ export const authenticate = async (
       try {
         const thisUser = await userModel.findById(decoded.user_id);
 
-        const viettelToken = thisUser?.accesstoken;
-
-        if (!viettelToken) {
-          throw ErrorResponse(
-            RESPONSE_STATUS.FAILED,
-            'Authentication Failed - Dont Have token'
-          );
-        }
-
-        const decodedVietelToken = jwtDecode<{
-          user_id: string;
-          exp: number;
-          iat: number;
-        }>(viettelToken);
-
-        if (!decodedVietelToken) {
-          throw ErrorResponse(
-            RESPONSE_STATUS.FAILED,
-            'Authentication Failed - Viettel Token is invalid'
-          );
-        }
-
+        next()
+       
+          
      
 
-        if (decodedVietelToken.exp * 1000 < new Date().getTime()) {
-          const newToken = await refreshVietelToken(thisUser.refreshtoken);
+       
 
-          const newAccessToken = newToken.data.token;
-          const newRefreshToken = newToken.data.refresh;
-
-          thisUser.accesstoken = newAccessToken;
-          thisUser.refreshtoken = newRefreshToken;
-
-          const updateUserViettelToken = await userModel.findByIdAndUpdate(
-            thisUser._id,
-            {
-              accesstoken: newAccessToken,
-              refreshtoken: newRefreshToken,
-            },
-            {new: true}
-          );
-
-          const userBalance = await axiosClientAuth(newAccessToken).get(
-            userEndPoint.GET_USER_BALANCE
-          );
-          
-          const users = await userModel.findByIdAndUpdate(thisUser.id, {
-            credit: userBalance.data
-          })
-
-
-          req.user = updateUserViettelToken;
-          next();
-        }else{
-          const userBalance = await axiosClientAuth(thisUser.accesstoken).get(
-            userEndPoint.GET_USER_BALANCE
-          );
-
-          
-          const users = await userModel.findByIdAndUpdate(thisUser.id, {
-            credit: userBalance.data.acc_credit
-          })
-
-          req.user = thisUser;
-          next();
-        }
        
       } catch (error) {
          return res.status(500).json(error)
