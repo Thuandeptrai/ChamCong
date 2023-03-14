@@ -12,7 +12,6 @@ import { errorHandler } from './middleware/handleError';
 import expressFileUpload from 'express-fileupload'
 import path from 'path';
 import { socket } from './socket';
-import Roles from './models/Roles';
 import { generateRandomString } from './utils';
 import userModel from './models/user.model';
 import bcrypt from 'bcrypt'
@@ -65,28 +64,9 @@ useRoutes(app);
 
 app.use(errorHandler)
 
-const autoCreateRoles = async () => {
-  try {
-    const check = await Roles.find({
-    })
-    if (!check || check.length == 0) {
-      const admin = await Roles.create({
-        code: generateRandomString(8),
-        roleName: config.role.admin
-      })
-      const user = await Roles.create({
-        code: generateRandomString(8),
-        roleName: config.role.admin
-      })
-      console.log("Create Roles")
-    }
-  } catch (error) {
-    console.log(error)
-  }
-}
 
 
-autoCreateRoles()
+
 dbBackup(process.env.DB_NAME || 'vietstack', process.env.BACKUP_PATH || '/www/wwwroot/vietstack/')
 
 const server = createServer(app);

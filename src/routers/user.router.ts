@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { syncDataUser, getUserBalance, getUserDetail, signUp,getpagingQLUser, getAllUser, verifyTokenEmail, getPaging, addUserCredit, checkValidToken, updateUser } from '../controllers';
-import { authenticate, authenticateforAdmin, syncDataUserMiddleware } from '../middleware';
+import { checkValidToken, getAllUser, signUp, updateUser } from '../controllers';
+import { authenticate, authenticateforAdmin } from '../middleware';
 
 const router = Router();
 // check token

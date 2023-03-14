@@ -1,105 +1,29 @@
-import { Request, Response, NextFunction, response } from 'express';
-import UserModel from '../models/user.model';
-import logging from '../config/logging';
-import { UserService } from '../services';
-import { convertDataToSyncData, RESPONSE_STATUS } from '../utils';
-import config from '../config/config';
-import { callApiViettel } from '../middleware';
-import axios, { HttpStatusCode } from 'axios';
+import { HttpStatusCode } from 'axios';
+import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
-import { responseModel } from '../utils/responseModel';
-import { hashSync, genSaltSync, compareSync } from 'bcrypt';
-import { ErrorResponse } from '../utils/ErrorResponse';
-import {
-  authentication,
-  axiosClient,
-  axiosClientAuth,
-} from '../services/axiosClient';
 import jwt from 'jsonwebtoken';
+import config from '../config/config';
+import logging from '../config/logging';
 import { AuthRquest } from '../interfaces';
+import { callApiViettel } from '../middleware';
+
+import { default as UserModel, default as userModel } from '../models/user.model';
+import {
+  axiosClient,
+  axiosClientAuth
+} from '../services/axiosClient';
+import { RESPONSE_STATUS, convertDataToSyncData } from '../utils';
+import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
-import { userEndPoint } from '../utils/endpoint';
-import emailToken from '../models/emailToken';
-import crypto from 'crypto';
-import { sendMailHelper } from '../helpers/sendEmail';
-import userModel from '../models/user.model';
-import supportModel from '../models/support.model';
-import servicesModel from '../models/services.model';
 import { hashPassword, verifyPassword } from '../utils/auth';
+import { userEndPoint } from '../utils/endpoint';
+import { responseModel } from '../utils/responseModel';
 
 const NAME_SPACE = 'User';
 
-export const verifyTokenEmail = async (req: Request, res: Response) => {
-  try {
-    const user_id = req.params.user_id;
-    const token = req.params.token;
 
-    const find = await emailToken.findOne({ user: user_id });
 
-    if (!find) {
-      return res.redirect('/authentication-fail.html');
-    }
 
-    if (find.token != token) {
-      return res.redirect(`/authentication-fail.html`);
-    }
-
-    const updateUser = await userModel.findByIdAndUpdate(user_id, {
-      verified: true,
-    });
-
-    const deleteToken = await emailToken.deleteOne({ user: user_id });
-
-    return res.redirect('/authentication-success.html');
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export const syncDataUser = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    logging.info(NAME_SPACE, 'syncDataUser');
-
-    const allClients = await callApiViettel({
-      call: 'getClients',
-    });
-
-    const allClientIds = allClients?.clients?.map((client: any) => client?.id);
-
-    await UserModel.remove({});
-
-    const listClientsToAdd = await Promise.all(
-      allClientIds?.map(async (id: string) => {
-        const clientDetail = await callApiViettel({
-          call: 'getClientDetails',
-          id,
-        });
-
-        const { client } = clientDetail;
-
-        // await new UserModel(client).save();
-        return client;
-      })
-    );
-
-    const dataToAdd = convertDataToSyncData(listClientsToAdd);
-
-    const resData = await UserModel.insertMany(dataToAdd);
-
-    return res.status(200).json({
-      status: RESPONSE_STATUS.SUCCESS,
-      allClients: resData,
-      message: 'Sync data user from Manager idcviettel to my database',
-    });
-  } catch (error) {
-    logging.error(NAME_SPACE, 'Error syncDataUser', error);
-    return res.status(500).json(error);
-  }
-};
 
 export const addUserCredit = async (
   req: AuthRquest,
@@ -354,80 +278,6 @@ export const checkValidToken = async (
 //   }
 // }
 
-export const getpagingQLUser = async (
-  req: AuthRquest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const dataUser = await UserModel.find();
-    const dataId: any = [];
-    dataUser.map((item: any) => {
-      const a = {
-        id_client: item?.client_id,
-        id: item._id,
-      };
-      dataId.push(a);
-    });
-
-    const userStats = await Promise.all(
-      dataId?.map(async (item: any) => {
-        const data =
-          await axiosClient.get(`/api.php?api_id=0d9687d614d03f5c62fa&api_key=957ee008ea71470c0830&call=getClientStats&id=${item?.id_client}
-      `);
-        const item1 = data?.data.stats;
-        const suport = await supportModel.find({
-          userId: item?.id,
-        });
-        const dem = suport.length;
-        const dem1 = suport?.map((item: any) => {
-          if (item?.level === 3 || item.level !== undefined) {
-            return item?.level;
-          }
-        });
-        const user = await UserModel.find({
-          _id: item?.id,
-        });
-
-        const service = await servicesModel.find({
-          client_id: item.id_client,
-        });
-
-        const a = {
-          invoice_paid: item1?.invoice_paid,
-          paid: item1?.paid,
-          invoice_cancelled: item1?.invoice_cancelled,
-          cancelled: item1?.cancelled,
-          invoice_unpaid: item1?.invoice_unpaid,
-          unpaid: item1?.unpaid,
-          shared: item1?.shared,
-          reseller: item1?.reseller,
-          dedicated: item1?.dedicated,
-          other: item1?.other,
-          domain: item1?.domain,
-          ticket: item1?.ticket,
-          credit: item1?.credit,
-          affiliate: item1?.affiliate,
-          currency_id: item1?.currency_id,
-          income: item1?.income,
-          accounts: item1?.accounts,
-          count_ticket: dem,
-          name: user[0]?.lastname,
-          soTicket: dem1,
-          service: service.length,
-        };
-        return a;
-      })
-    );
-
-    return res.status(200).json({
-      data: userStats,
-    });
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
 export const updateUser = async (
   req: AuthRquest,
   res: Response,
