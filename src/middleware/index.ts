@@ -1,24 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import config from '../config/config';
-import logging from '../config/logging';
-import { AuthRquest, CRequest } from '../interfaces';
+import { AuthRquest } from '../interfaces';
+import userModel from '../models/user.model';
 import {
-  RESPONSE_STATUS,
-  convertDataToSyncData,
   convertObjectToQuery,
-  removeUndefinedProperties,
+  removeUndefinedProperties
 } from '../utils';
 import { getSignature, verifyToken } from '../utils/auth';
-import axios from 'axios';
-import userModel from '../models/user.model';
-import jwt from 'jsonwebtoken';
-import jwtDecode from 'jwt-decode';
-import { ErrorResponse } from '../utils/ErrorResponse';
-import { axiosClientAuth, refreshVietelToken } from '../services/axiosClient';
 
-import { userEndPoint } from '../utils/endpoint';
 import fetch from 'node-fetch';
-
 
 export const authenticate = async (
   req: any,
@@ -44,24 +34,14 @@ export const authenticate = async (
       }
       try {
         const thisUser = await userModel.findById(decoded.user_id);
-
-        next()
-       
-          
-     
-
-       
-
-       
+        req.body.thisUser = thisUser;
+        next();
       } catch (error) {
-         return res.status(500).json(error)
+        return res.status(500).json(error);
       }
     }
   );
 };
-
-
-
 
 export const authenticateforAdmin = async (
   req: any,
@@ -87,30 +67,18 @@ export const authenticateforAdmin = async (
       }
       try {
         const thisUser = await userModel.findById(decoded.user_id);
-        if(thisUser?.isAdmin==="True"){
-
-          next()
-        }else{
-        return res.status(401).send({ message: 'You have no permission' });
-          
+        if (thisUser?.isAdmin === 'True') {
+          req.body.thisUser = thisUser; 
+          next();
+        } else {
+          return res.status(401).send({ message: 'You have no permission' });
         }
-
-       
-          
-     
-
-       
-
-       
       } catch (error) {
-         return res.status(500).json(error)
+        return res.status(500).json(error);
       }
     }
   );
 };
-
-
-
 
 export const signature = (req: Request, res: Response, next: NextFunction) => {
   const query = req.method + req.originalUrl + JSON.stringify(req.body || '');
@@ -151,10 +119,7 @@ export const syncDataUserMiddleware = async (
   next: NextFunction
 ) => {
   try {
-
-   
-
-    next()
+    next();
   } catch (error) {
     return res.status(500).json(error);
   }

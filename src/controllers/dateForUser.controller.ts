@@ -49,10 +49,11 @@ export const createDateForUser = async (
     // if (checkValidBody.error) {
     //   throw new Error(checkValidBody.error.message);
     // }
-
+    //console.log(req.body.thisUser as any)
     const findTicket: any = await dateToCheck.find({});
     const diffFromNow = getTimeDiffFromNow(findTicket[0].dateIn);
     console.log(diffFromNow.hours()); //
+
     //   const ticket = await dateToCheck.create(req.body);
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
