@@ -1,7 +1,8 @@
-export function responseModel<T>(status: number, message: string ,data: T) {
+export function responseModel<T>(status: number, message: string ,data: T, count?: number) {
     return {
         status, 
         message,
-        data
+        data,
+        count
     }
 }
