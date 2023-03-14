@@ -18,6 +18,7 @@ const UserSchema: Schema = new Schema(
     access: { type: Array, required: false, default: [] },
     accesstoken: { type: String, required: false },
     refreshtoken: { type: String, required: false },
+    isAdmin:{type:String, default:false, required: false},
     role: {
       type: ObjectId,
       ref: 'roles'

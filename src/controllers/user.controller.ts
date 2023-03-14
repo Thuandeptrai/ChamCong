@@ -188,6 +188,7 @@ export const signUp = async (
     userBankNumber:Joi.string().min(6).max(32).required(),
     salary:Joi.number().required(),
     email: Joi.string().email(),  
+    isAdmin: Joi.string().required()
   });
   try {
     const checkValidBody = schema.validate(req.body);

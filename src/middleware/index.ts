@@ -61,6 +61,56 @@ export const authenticate = async (
   );
 };
 
+
+
+
+export const authenticateforAdmin = async (
+  req: any,
+  res: Response,
+  next: NextFunction
+) => {
+  const authorization = req.headers['authorization'];
+  if (!authorization) {
+    return res.status(401).send({ message: 'No token provided' });
+  }
+
+  const [bearer, token] = authorization.split(' ');
+  if (bearer !== 'Bearer') {
+    return res.status(401).send({ message: 'Invalid token format' });
+  }
+  verifyToken(
+    token,
+    config.auth.jwtSecretKey,
+    null,
+    async (error: any, decoded: any) => {
+      if (error) {
+        return res.status(401).send({ message: 'Invalid token' });
+      }
+      try {
+        const thisUser = await userModel.findById(decoded.user_id);
+        if(thisUser?.isAdmin==="True"){
+
+          next()
+        }else{
+        return res.status(401).send({ message: 'You have no permission' });
+          
+        }
+
+       
+          
+     
+
+       
+
+       
+      } catch (error) {
+         return res.status(500).json(error)
+      }
+    }
+  );
+};
+
+
 export const authorize =
   (allowedRoles: string[]) => async (req: AuthRquest, res: Response, next: NextFunction) => {
     const id  = req.user?.id;

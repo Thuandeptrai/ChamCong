@@ -56,6 +56,7 @@ export interface UserType {
   role: string;
   socketId: string[];
   verified: boolean
+  isAdmin: string
 }
 
 export interface UserToken extends UserType {
