@@ -1,11 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 const Ticket = new mongoose.Schema({
-    userDateIn: Number,
+    userDateIn: Array,
     DateIn: Number,
     DateOut: Number,
     leisureTime: String,
     userId: String,
-    userDateOut: Number,
+    userDateOut: Array,
     isEnough: {Boolean, default: false},
   });
   
