@@ -25,6 +25,7 @@ import userModel from '../models/user.model';
 import { hashPassword, verifyPassword } from '../utils/auth';
 import dateToCheck from '../models/DateToCheck.model';
 import moment from 'moment';
+import ticketForUser from '../models/Ticket.model';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
@@ -37,28 +38,30 @@ export const createDateForUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const schema = Joi.object({
-    dateIn: Joi.number().required(),
-    lateDate: Joi.number().required(),
-    leisure: Joi.number().required(),
-    dateOut: Joi.number().required(),
-  });
+  
 
   try {
-    // const checkValidBody = schema.validate(req.body);
-    // if (checkValidBody.error) {
-    //   throw new Error(checkValidBody.error.message);
-    // }
-    //console.log(req.body.thisUser as any)
-    const findTicket: any = await dateToCheck.find({});
-    const diffFromNow = getTimeDiffFromNow(findTicket[0].dateIn);
-    console.log(diffFromNow.hours()); //
 
-    //   const ticket = await dateToCheck.create(req.body);
+
+    const findTicket: any = await dateToCheck.find({});
+    const findTicketforUser: any = await ticketForUser.find({}).sort({DateIn:'descending'});
+
+
+    const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
+    let ticket
+    if(diffFromNow.asHours() >= 24) {
+    ticket = await ticketForUser.create({
+      userDateIn: moment().unix(), DateIn: Number(findTicket[0].dateIn),DateOut: Number(findTicket[0].dateOut), userId: req.body.thisUser._id, userDateOut: 0
+     });
+    }else {
+
+    }
+
+  
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       ResponseMessage.CREATE_DATE_SUCCESS,
-      {} //ticket
+      ticket || {}
     );
     return res.status(200).json(response);
   } catch (error) {
