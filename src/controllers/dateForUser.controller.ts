@@ -41,10 +41,12 @@ export const createDateForUser = async (
   try {
     const findTicket: any = await dateToCheck.find({});
     const findTicketforUser: any = await ticketForUser
-      .find({})
+      .find({userId:req.body.thisUser._id})
       .sort({ DateIn: 'descending' });
     // Convert Date Time like 12:00 To UnixTime
-    const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
+    
+    const diffFromNow = getTimeDiffFromNow(findTicketforUser.length  === 0 ? findTicket[0].dateIn :findTicketforUser[0].DateIn);
+    
     const DateIn =  findTicket[0].dateIn.split(":")
     const dateIn = moment().set({ hour: Number(DateIn[0]) , minute: Number(DateIn[1]), second: 0 });
     const DateOut = findTicket[0].dateOut.split(":")
@@ -54,17 +56,21 @@ export const createDateForUser = async (
     const unixDateOut = dateOut.unix()
     // end of conversion
     let ticket;
-    if (diffFromNow.asHours() >= 24) {
+    if (diffFromNow.asHours() >= 24 || findTicketforUser.length === 0) {
       ticket = await ticketForUser.create({
-        userDateIn: moment().unix(),
+        userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
         userId: req.body.thisUser._id,
-        userDateOut: 0,
+        
       });
     } else {
+      const dateIn = findTicketforUser[0].userDateIn
+      dateIn.push(moment().unix())
+      console.log(dateIn)
+      ticket = await ticketForUser.findByIdAndUpdate(findTicketforUser[0]._id,{
+        "userDateIn": dateIn}, {new:true})
     }
-
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       ResponseMessage.CREATE_DATE_SUCCESS,
@@ -77,16 +83,43 @@ export const createDateForUser = async (
   }
 };
 
-export const updateDateForUser = async (
+export const checkOutForUser = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   
   try {
-    
-
+    const findTicketforUser: any = await ticketForUser
+      .find({})
+      .sort({ DateIn: 'descending' });
+      console.log(findTicketforUser.length)
+    if(findTicketforUser.length > 0)
+    {
+    // Convert Date Time like 12:00 To UnixTime
+    const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
+    let ticket
+    if (diffFromNow.asHours() >= 24) {
+      return res.status(500).json({Data:"Do not find Your ID"})
+    } else {
+      const dateIn = findTicketforUser[0].userDateOut
+      dateIn.push(moment().unix())
+      ticket = await ticketForUser.findByIdAndUpdate(findTicketforUser[0]._id,{
+        "userDateOut": dateIn}, {new:true})
+    }
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      ResponseMessage.CREATE_DATE_SUCCESS,
+      ticket || {}
+    );
     return res.status(200).json(response);
+
+  }else{
+    return res.status(500).json({Data:"Do not find Your ID"})
+
+
+  }
+
   } catch (error) {
    
   }
