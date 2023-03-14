@@ -1,5 +1,5 @@
 export const ResponseMessage = {
-    
+    CREATE_DATE_SUCCESS: "Tạo giờ thành công",
     LOGIN_SUCCESS: "Đăng nhập thành công",
     USER_NOT_EXIST: "Người dùng không tồn tại",
     LOGIN_FAILED: "Đăng nhập thất bại",

@@ -10,3 +10,4 @@ export * from './paymentMethod.controller';
 export * from './clientTicket.controller';
 export * from './department.controller';
 export * from './invoice.controller';
+export * from './dateToCheck.controller';
