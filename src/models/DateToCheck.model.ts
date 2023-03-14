@@ -1,9 +1,9 @@
 import mongoose, { Schema, Document } from 'mongoose';
 const DateToCheck = new mongoose.Schema({
-    dateIn: Number,
-    lateDate: Number,
-    leisure: Number,
-    dateOut: Number,
+    dateIn: String,
+    lateDate: String,
+    leisure: String,
+    dateOut: String,
   });
   
   // Create a model for the "users" collection using the schema

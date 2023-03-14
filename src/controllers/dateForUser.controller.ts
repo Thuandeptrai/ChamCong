@@ -38,26 +38,33 @@ export const createDateForUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  
-
   try {
-
-
     const findTicket: any = await dateToCheck.find({});
-    const findTicketforUser: any = await ticketForUser.find({}).sort({DateIn:'descending'});
-
-
+    const findTicketforUser: any = await ticketForUser
+      .find({})
+      .sort({ DateIn: 'descending' });
+    // Convert Date Time like 12:00 To UnixTime
     const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
-    let ticket
-    if(diffFromNow.asHours() >= 24) {
-    ticket = await ticketForUser.create({
-      userDateIn: moment().unix(), DateIn: Number(findTicket[0].dateIn),DateOut: Number(findTicket[0].dateOut), userId: req.body.thisUser._id, userDateOut: 0
-     });
-    }else {
-
+    const DateIn =  findTicket[0].dateIn.split(":")
+    const dateIn = moment().set({ hour: Number(DateIn[0]) , minute: Number(DateIn[1]), second: 0 });
+    const DateOut = findTicket[0].dateOut.split(":")
+    // Get the Unix timestamp
+    const dateOut = moment().set({ hour: Number(DateOut[0]) , minute: Number(DateOut[1]), second: 0 });
+    const unixDateIn = dateIn.unix();
+    const unixDateOut = dateOut.unix()
+    // end of conversion
+    let ticket;
+    if (diffFromNow.asHours() >= 24) {
+      ticket = await ticketForUser.create({
+        userDateIn: moment().unix(),
+        DateIn: Number(unixDateIn),
+        DateOut: Number(unixDateOut),
+        userId: req.body.thisUser._id,
+        userDateOut: 0,
+      });
+    } else {
     }
 
-  
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       ResponseMessage.CREATE_DATE_SUCCESS,
@@ -75,23 +82,13 @@ export const updateDateForUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const schema = Joi.object({
-    dateIn: Joi.number(),
-    lateDate: Joi.number(),
-    leisure: Joi.number(),
-    dateOut: Joi.number(),
-  });
-  const id = req.params.DateId;
+  
   try {
-    const checkValidBody = schema.validate(req.body);
-    if (checkValidBody.error) {
-      throw new Error(checkValidBody.error.message);
-    }
+    
 
     return res.status(200).json(response);
   } catch (error) {
-    console.log(error);
-    next(error);
+   
   }
 };
 
