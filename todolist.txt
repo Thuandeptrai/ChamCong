@@ -1,0 +1,2 @@
+1. Lam login => luu token o local storage Bearer ${token} => check valid Token ? redirect to home : redirect login
+2. Creating account => edit account => list account   
