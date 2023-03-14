@@ -6,7 +6,7 @@ import { convertDataToSyncData, RESPONSE_STATUS } from '../utils';
 import config from '../config/config';
 import { callApiViettel } from '../middleware';
 import axios, { HttpStatusCode } from 'axios';
-import Joi from 'joi';
+import Joi, { any } from 'joi';
 import { responseModel } from '../utils/responseModel';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { ErrorResponse } from '../utils/ErrorResponse';
@@ -26,6 +26,11 @@ import { hashPassword, verifyPassword } from '../utils/auth';
 import dateToCheck from '../models/DateToCheck.model';
 import moment from 'moment';
 
+function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
+  const now = moment();
+  const timestampMoment = moment.unix(unixTimestamp);
+  return moment.duration(now.diff(timestampMoment));
+}
 
 export const createDateForUser = async (
   req: Request,
@@ -40,19 +45,21 @@ export const createDateForUser = async (
   });
 
   try {
-    const checkValidBody = schema.validate(req.body);
-    if (checkValidBody.error) {
-      throw new Error(checkValidBody.error.message);
-    }
-    const ticket = moment().format(); 
+    // const checkValidBody = schema.validate(req.body);
+    // if (checkValidBody.error) {
+    //   throw new Error(checkValidBody.error.message);
+    // }
+
+    const findTicket: any = await dateToCheck.find({});
+    const diffFromNow = getTimeDiffFromNow(findTicket[0].dateIn);
+    console.log(diffFromNow.hours()); //
     //   const ticket = await dateToCheck.create(req.body);
-      const response = responseModel(
-        RESPONSE_STATUS.SUCCESS,
-        ResponseMessage.CREATE_DATE_SUCCESS,
-        ticket
-      );
-      return res.status(200).json(response);
-   
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      ResponseMessage.CREATE_DATE_SUCCESS,
+      {} //ticket
+    );
+    return res.status(200).json(response);
   } catch (error) {
     console.log(error);
     next(error);
@@ -76,10 +83,8 @@ export const updateDateForUser = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
- 
-   
-      return res.status(200).json(response);
-    
+
+    return res.status(200).json(response);
   } catch (error) {
     console.log(error);
     next(error);
@@ -103,7 +108,7 @@ export const getAllDateForUser = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-    const ticket = await dateToCheck.find({})
+    const ticket = await dateToCheck.find({});
     if (ticket) {
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
