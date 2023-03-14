@@ -1,31 +1,13 @@
-import { Request, Response, NextFunction, response } from 'express';
-import UserModel from '../models/user.model';
-import logging from '../config/logging';
-import { UserService } from '../services';
-import { convertDataToSyncData, RESPONSE_STATUS } from '../utils';
-import config from '../config/config';
-import { callApiViettel } from '../middleware';
-import axios, { HttpStatusCode } from 'axios';
-import Joi, { any } from 'joi';
-import { responseModel } from '../utils/responseModel';
-import { hashSync, genSaltSync, compareSync } from 'bcrypt';
-import { ErrorResponse } from '../utils/ErrorResponse';
-import {
-  authentication,
-  axiosClient,
-  axiosClientAuth,
-} from '../services/axiosClient';
-import jwt from 'jsonwebtoken';
-import { AuthRquest } from '../interfaces';
-import { ResponseMessage } from '../utils/ResonseMessage';
-import { userEndPoint } from '../utils/endpoint';
-import crypto from 'crypto';
-import { sendMailHelper } from '../helpers/sendEmail';
-import userModel from '../models/user.model';
-import { hashPassword, verifyPassword } from '../utils/auth';
-import dateToCheck from '../models/DateToCheck.model';
+import { HttpStatusCode } from 'axios';
+import { NextFunction, Request, Response } from 'express';
+import Joi from 'joi';
 import moment from 'moment';
+import dateToCheck from '../models/DateToCheck.model';
 import ticketForUser from '../models/Ticket.model';
+import { RESPONSE_STATUS } from '../utils';
+import { ErrorResponse } from '../utils/ErrorResponse';
+import { ResponseMessage } from '../utils/ResonseMessage';
+import { responseModel } from '../utils/responseModel';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
@@ -78,6 +60,8 @@ export const createDateForUser = async (
     );
     return res.status(200).json(response);
   } catch (error) {
+    throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
+
     console.log(error);
     next(error);
   }
@@ -100,7 +84,8 @@ export const checkOutForUser = async (
     const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
     let ticket
     if (diffFromNow.asHours() >= 24) {
-      return res.status(500).json({Data:"Do not find Your ID"})
+      throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
+
     } else {
       const dateIn = findTicketforUser[0].userDateOut
       dateIn.push(moment().unix())

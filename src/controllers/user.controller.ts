@@ -3,20 +3,14 @@ import { NextFunction, Request, Response } from 'express';
 import Joi from 'joi';
 import jwt from 'jsonwebtoken';
 import config from '../config/config';
-import logging from '../config/logging';
 import { AuthRquest } from '../interfaces';
 import { callApiViettel } from '../middleware';
 
 import { default as UserModel, default as userModel } from '../models/user.model';
-import {
-  axiosClient,
-  axiosClientAuth
-} from '../services/axiosClient';
-import { RESPONSE_STATUS, convertDataToSyncData } from '../utils';
+import { RESPONSE_STATUS } from '../utils';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { hashPassword, verifyPassword } from '../utils/auth';
-import { userEndPoint } from '../utils/endpoint';
 import { responseModel } from '../utils/responseModel';
 
 const NAME_SPACE = 'User';
@@ -151,28 +145,7 @@ export const signUp = async (
   }
 };
 
-export const getUserBalance = async (
-  req: AuthRquest,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userBalance = await axiosClientAuth(req.user?.accesstoken).get(
-      userEndPoint.GET_USER_BALANCE
-    );
 
-    const response = responseModel(
-      RESPONSE_STATUS.SUCCESS,
-      ResponseMessage.GET_USER_BALANCE_SUCCESS,
-      userBalance.data
-    );
-
-    return res.status(HttpStatusCode.Ok).json(response);
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
 
 export const getUserDetail = async (
   req: AuthRquest,

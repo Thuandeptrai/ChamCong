@@ -1,21 +1,16 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import express from 'express';
-import cors, { CorsOptions } from 'cors';
-import { createServer } from 'http';
-import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import cors, { CorsOptions } from 'cors';
+import dotenv from 'dotenv';
+import express from 'express';
+import expressFileUpload from 'express-fileupload';
+import { createServer } from 'http';
+import mongoose from 'mongoose';
+import path from 'path';
 import config from './config/config';
 import logging from './config/logging';
-import useRoutes from './routers';
-import mongoose from 'mongoose';
 import { errorHandler } from './middleware/handleError';
-import expressFileUpload from 'express-fileupload'
-import path from 'path';
-import { socket } from './socket';
-import { generateRandomString } from './utils';
-import userModel from './models/user.model';
-import bcrypt from 'bcrypt'
-import { callApiViettel } from './middleware';
+import useRoutes from './routers';
 const Fingerprint = require("express-fingerprint");
 
 
