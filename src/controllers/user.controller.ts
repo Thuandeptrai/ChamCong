@@ -434,9 +434,24 @@ export const updateUser = async (
   next: NextFunction
 ) => {
   const userId = req.params.userId;
+  const schema = Joi.object({
+    name: Joi.string().max(8),
+    password: Joi.string().min(6).max(32),
+    password2: Joi.ref('password'),
+    employeeNumber: Joi.number(),
+    bankName: Joi.string().min(6).max(32),
+    userBankNumber: Joi.string().min(6).max(32),
+    salary: Joi.number(),
+    email: Joi.string().email(),
+    isAdmin: Joi.string(),
+  });
   try {
     if(userId)
     {
+      const checkValidBody = schema.validate(req.body);
+      if (checkValidBody.error) {
+        throw new Error(checkValidBody.error.message);
+      }
       const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, {new:true})
       return res.status(200).json(updateUser);
     }else{
