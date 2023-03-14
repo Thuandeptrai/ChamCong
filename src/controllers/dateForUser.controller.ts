@@ -24,8 +24,10 @@ import { sendMailHelper } from '../helpers/sendEmail';
 import userModel from '../models/user.model';
 import { hashPassword, verifyPassword } from '../utils/auth';
 import dateToCheck from '../models/DateToCheck.model';
+import moment from 'moment';
 
-export const createDate = async (
+
+export const createDateForUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -42,25 +44,22 @@ export const createDate = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-    const TicketCount = await dateToCheck.count({});
-    if (TicketCount < 0) {
-      const ticket = await dateToCheck.create(req.body);
+    const ticket = moment().format(); 
+    //   const ticket = await dateToCheck.create(req.body);
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
         ResponseMessage.CREATE_DATE_SUCCESS,
         ticket
       );
       return res.status(200).json(response);
-    } else {
-      throw ErrorResponse(HttpStatusCode.BadRequest, 'You can not create');
-    }
+   
   } catch (error) {
     console.log(error);
     next(error);
   }
 };
 
-export const updateDate = async (
+export const updateDateForUser = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -77,26 +76,17 @@ export const updateDate = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-    const ticket = await dateToCheck.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-    if (ticket) {
-      const response = responseModel(
-        RESPONSE_STATUS.SUCCESS,
-        ResponseMessage.CREATE_DATE_SUCCESS,
-        ticket
-      );
+ 
+   
       return res.status(200).json(response);
-    } else {
-      throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
-    }
+    
   } catch (error) {
     console.log(error);
     next(error);
   }
 };
 
-export const getAllDate = async (
+export const getAllDateForUser = async (
   req: Request,
   res: Response,
   next: NextFunction

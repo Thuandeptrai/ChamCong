@@ -13,10 +13,12 @@ export const createDate = async (
   next: NextFunction
 ) => {
   const schema = Joi.object({
-    dateIn: Joi.number().required(),
-    lateDate: Joi.number().required(),
-    leisure: Joi.number().required(),
+    userDateIn: Joi.number().required(),
+    DateIn: Joi.number().required(),
+    DateOut: Joi.number().required(),
     dateOut: Joi.number().required(),
+    userId: Joi.string().required(),
+    userDateOut: Joi.number().required()
   });
 
   try {
