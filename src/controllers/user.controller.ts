@@ -10,13 +10,17 @@ import Joi from 'joi';
 import { responseModel } from '../utils/responseModel';
 import { hashSync, genSaltSync, compareSync } from 'bcrypt';
 import { ErrorResponse } from '../utils/ErrorResponse';
-import { authentication, axiosClient, axiosClientAuth } from '../services/axiosClient';
+import {
+  authentication,
+  axiosClient,
+  axiosClientAuth,
+} from '../services/axiosClient';
 import jwt from 'jsonwebtoken';
 import { AuthRquest } from '../interfaces';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { userEndPoint } from '../utils/endpoint';
 import emailToken from '../models/emailToken';
-import crypto from 'crypto'
+import crypto from 'crypto';
 import { sendMailHelper } from '../helpers/sendEmail';
 import userModel from '../models/user.model';
 import supportModel from '../models/support.model';
@@ -27,30 +31,30 @@ const NAME_SPACE = 'User';
 
 export const verifyTokenEmail = async (req: Request, res: Response) => {
   try {
-    const user_id = req.params.user_id
-    const token = req.params.token
+    const user_id = req.params.user_id;
+    const token = req.params.token;
 
-    const find = await emailToken.findOne({ user: user_id })
+    const find = await emailToken.findOne({ user: user_id });
 
     if (!find) {
-      return res.redirect('/authentication-fail.html')
+      return res.redirect('/authentication-fail.html');
     }
 
     if (find.token != token) {
-      return res.redirect(`/authentication-fail.html`)
+      return res.redirect(`/authentication-fail.html`);
     }
 
     const updateUser = await userModel.findByIdAndUpdate(user_id, {
-      verified: true
-    })
+      verified: true,
+    });
 
-    const deleteToken = await emailToken.deleteOne({ user: user_id })
+    const deleteToken = await emailToken.deleteOne({ user: user_id });
 
-    return res.redirect('/authentication-success.html')
+    return res.redirect('/authentication-success.html');
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};
 
 export const syncDataUser = async (
   req: Request,
@@ -97,41 +101,50 @@ export const syncDataUser = async (
   }
 };
 
-export const addUserCredit = async (req: AuthRquest,
+export const addUserCredit = async (
+  req: AuthRquest,
   res: Response,
-  next: NextFunction) => {
+  next: NextFunction
+) => {
   const schema = Joi.object({
-    credit: Joi.number().required()
-  })
+    credit: Joi.number().required(),
+  });
   try {
-    const check = schema.validate(req.body)
-    if(check.error){
-      throw new Error(check.error.message)
+    const check = schema.validate(req.body);
+    if (check.error) {
+      throw new Error(check.error.message);
     }
-    const userId = req.params.id
-    const user = await UserModel.findOne({id: userId})
+    const userId = req.params.id;
+    const user = await UserModel.findOne({ id: userId });
     const addClientCredit = await callApiViettel({
       call: 'addClientCredit',
       client_id: user?.client_id,
-      amount: Number(req.body.credit)
+      amount: Number(req.body.credit),
     });
 
-    if(!addClientCredit.success){
-      throw ErrorResponse(HttpStatusCode.InternalServerError, "Nạp tiền thất bại do lỗi từ hệ thống")
+    if (!addClientCredit.success) {
+      throw ErrorResponse(
+        HttpStatusCode.InternalServerError,
+        'Nạp tiền thất bại do lỗi từ hệ thống'
+      );
     }
 
     const updateUserCredit = await userModel.findByIdAndUpdate(userId, {
       $inc: {
-        credit: Number(req.body.credit)
-      }
-    })
+        credit: Number(req.body.credit),
+      },
+    });
 
-    const response = responseModel(RESPONSE_STATUS.SUCCESS, "Nạp tiền thành công", true)
-    return res.status(200).json(response)
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      'Nạp tiền thành công',
+      true
+    );
+    return res.status(200).json(response);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 export const login = async (
   req: Request,
@@ -154,14 +167,12 @@ export const login = async (
       throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
     }
 
-    const verify  = await verifyPassword(req.body.password, checkExist.password)
-    
+    const verify = await verifyPassword(req.body.password, checkExist.password);
+
     if (!verify) {
       throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
     }
-    
-  
-    
+
     const accessToken = jwt.sign(
       { user_id: checkExist._id },
       config.auth.jwtSecretKey,
@@ -183,24 +194,24 @@ export const signUp = async (
     name: Joi.string().max(8).required(),
     password: Joi.string().min(6).max(32).required(),
     password2: Joi.ref('password'),
-    employeeNumber:Joi.number().required(),
+    employeeNumber: Joi.number().required(),
     bankName: Joi.string().min(6).max(32).required(),
-    userBankNumber:Joi.string().min(6).max(32).required(),
-    salary:Joi.number().required(),
-    email: Joi.string().email(),  
-    isAdmin: Joi.string().required()
+    userBankNumber: Joi.string().min(6).max(32).required(),
+    salary: Joi.number().required(),
+    email: Joi.string().email(),
+    isAdmin: Joi.string().required(),
   });
   try {
     const checkValidBody = schema.validate(req.body);
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-   const  checkExistGmail = await UserModel.find({ email: req.body.email })
+    const checkExistGmail = await UserModel.find({ email: req.body.email });
 
     if (checkExistGmail.length > 0) {
-      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST)
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
     }
-    req.body.password =await hashPassword(req.body.password)
+    req.body.password = await hashPassword(req.body.password);
     const syncUser = await UserModel.create(req.body);
 
     const response = responseModel(
@@ -244,7 +255,7 @@ export const getUserDetail = async (
   next: NextFunction
 ) => {
   try {
-    const userDetail = await UserModel.findById(req.user?.id).populate('role')
+    const userDetail = await UserModel.findById(req.user?.id).populate('role');
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
@@ -264,7 +275,6 @@ export const checkValidToken = async (
   next: NextFunction
 ) => {
   try {
-
     return res.status(HttpStatusCode.Ok).json(ResponseMessage.LOGIN_SUCCESS);
   } catch (error) {
     console.log(error);
@@ -279,7 +289,6 @@ export const checkValidToken = async (
 // )=>{
 //   try {
 //     const userId = req?.user?.id
-
 
 //     const pageSize = req.query.pageSize || 10;
 //     const pageIndex = req.query.pageIndex || 1;
@@ -351,113 +360,151 @@ export const getpagingQLUser = async (
   next: NextFunction
 ) => {
   try {
-    const dataUser = await UserModel.find()
-    const dataId: any = []
+    const dataUser = await UserModel.find();
+    const dataId: any = [];
     dataUser.map((item: any) => {
       const a = {
         id_client: item?.client_id,
-        id: item._id
-      }
-      dataId.push(a)
-    })
+        id: item._id,
+      };
+      dataId.push(a);
+    });
 
-    const userStats = await Promise.all(dataId?.map(async (item: any) => {
-      const data = await axiosClient.get(`/api.php?api_id=0d9687d614d03f5c62fa&api_key=957ee008ea71470c0830&call=getClientStats&id=${item?.id_client}
+    const userStats = await Promise.all(
+      dataId?.map(async (item: any) => {
+        const data =
+          await axiosClient.get(`/api.php?api_id=0d9687d614d03f5c62fa&api_key=957ee008ea71470c0830&call=getClientStats&id=${item?.id_client}
       `);
-      const item1 = data?.data.stats
-      const suport = await supportModel.find({
-        userId: item?.id
-      })
-      const dem = suport.length
-      const dem1 = suport?.map((item: any) => {
-        if (item?.level === 3 || item.level !== undefined) {
-          return item?.level
-        }
-      })
-      const user = await UserModel.find({
-        _id: item?.id
-      })
+        const item1 = data?.data.stats;
+        const suport = await supportModel.find({
+          userId: item?.id,
+        });
+        const dem = suport.length;
+        const dem1 = suport?.map((item: any) => {
+          if (item?.level === 3 || item.level !== undefined) {
+            return item?.level;
+          }
+        });
+        const user = await UserModel.find({
+          _id: item?.id,
+        });
 
-      const service = await servicesModel.find({
-        client_id: item.id_client
+        const service = await servicesModel.find({
+          client_id: item.id_client,
+        });
+
+        const a = {
+          invoice_paid: item1?.invoice_paid,
+          paid: item1?.paid,
+          invoice_cancelled: item1?.invoice_cancelled,
+          cancelled: item1?.cancelled,
+          invoice_unpaid: item1?.invoice_unpaid,
+          unpaid: item1?.unpaid,
+          shared: item1?.shared,
+          reseller: item1?.reseller,
+          dedicated: item1?.dedicated,
+          other: item1?.other,
+          domain: item1?.domain,
+          ticket: item1?.ticket,
+          credit: item1?.credit,
+          affiliate: item1?.affiliate,
+          currency_id: item1?.currency_id,
+          income: item1?.income,
+          accounts: item1?.accounts,
+          count_ticket: dem,
+          name: user[0]?.lastname,
+          soTicket: dem1,
+          service: service.length,
+        };
+        return a;
       })
+    );
 
-      const a = {
-        invoice_paid: item1?.invoice_paid,
-        paid: item1?.paid,
-        invoice_cancelled: item1?.invoice_cancelled,
-        cancelled: item1?.cancelled,
-        invoice_unpaid: item1?.invoice_unpaid,
-        unpaid: item1?.unpaid,
-        shared: item1?.shared,
-        reseller: item1?.reseller,
-        dedicated: item1?.dedicated,
-        other: item1?.other,
-        domain: item1?.domain,
-        ticket: item1?.ticket,
-        credit: item1?.credit,
-        affiliate: item1?.affiliate,
-        currency_id: item1?.currency_id,
-        income: item1?.income,
-        accounts: item1?.accounts,
-        count_ticket: dem,
-        name: user[0]?.lastname,
-        soTicket: dem1,
-        service: service.length
-      }
-      return a
-    }))
-
-    return res.status(200).json(
-      {
-        data: userStats,
-      }
-    )
+    return res.status(200).json({
+      data: userStats,
+    });
   } catch (error) {
     console.log(error);
     next(error);
   }
-}
-
-export const getAllUser = async (req: AuthRquest, res: Response, next: NextFunction) => {
+};
+export const updateUser = async (
+  req: AuthRquest,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.params.userId;
   try {
-    const users = await UserModel.find({})
-    const response = responseModel(RESPONSE_STATUS.SUCCESS, 'Get All User Success', users)
-
-    return res.status(200).json(response)
-  } catch (error) {
-    console.log(error)
-    next(error)
-  }
-}
-
-export const getPaging = async (req: AuthRquest, res: Response, next: NextFunction) => {
-  try {
-    const pageSize = req.query.pageSize || 10
-    const pageIndex = req.query.pageIndex || 1
-    const search = req.query.search || null
-
-    const query: { search?: string } = {
-
+    if(userId)
+    {
+      const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, {new:true})
+      return res.status(200).json(updateUser);
+    }else{
+      throw ErrorResponse(
+        HttpStatusCode.BadRequest,
+        'UserId id is required'
+      );
     }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const getAllUser = async (
+  req: AuthRquest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await UserModel.find({});
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      'Get All User Success',
+      users
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const getPaging = async (
+  req: AuthRquest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const pageSize = req.query.pageSize || 10;
+    const pageIndex = req.query.pageIndex || 1;
+    const search = req.query.search || null;
+
+    const query: { search?: string } = {};
 
     if (search) {
-      query.search = search.toString()
+      query.search = search.toString();
     }
 
-    const users = await UserModel.find(query).skip((Number(pageSize) * Number(pageIndex) - Number(pageSize))).limit(Number(pageSize))
+    const users = await UserModel.find(query)
+      .skip(Number(pageSize) * Number(pageIndex) - Number(pageSize))
+      .limit(Number(pageSize));
 
-    const totalDocs = await UserModel.countDocuments()
+    const totalDocs = await UserModel.countDocuments();
 
-    const response = responseModel(RESPONSE_STATUS.SUCCESS, "Get users success", {
-      users: users,
-      totalDocs: totalDocs,
-      totalPages: Math.ceil(totalDocs / Number(pageSize))
-    })
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      'Get users success',
+      {
+        users: users,
+        totalDocs: totalDocs,
+        totalPages: Math.ceil(totalDocs / Number(pageSize)),
+      }
+    );
 
-    return res.status(200).json(response)
+    return res.status(200).json(response);
   } catch (error) {
-    console.log(error)
-    next(error)
+    console.log(error);
+    next(error);
   }
-}
+};
