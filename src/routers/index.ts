@@ -16,10 +16,9 @@ const version = {
 const useRoutes = (app: any) => {
   app.use(`${version.v1}/auth`, authRouter);
   app.use(`${version.v1}/users`, userRouter);
-  app.use(`${version.v1}/support`, supportRouter);
+
   app.use(`${version.v1}/date`, dateRouter);
 
-  app.use(`${version.v1}/notification`, NotificationRouter);
 };
 
 export default useRoutes;

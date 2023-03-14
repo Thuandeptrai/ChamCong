@@ -8,4 +8,5 @@ const Ticket = new mongoose.Schema({
   });
   
   // Create a model for the "users" collection using the schema
-  const User = mongoose.model('ticket', Ticket);
+  const ticketForUser = mongoose.model('ticketForUser', Ticket);
+  export default ticketForUser
