@@ -85,7 +85,7 @@ export const signUp = async (
       throw new Error(checkValidBody.error.message);
     }
     const checkExistGmail = await UserModel.find({ email: req.body.email });
-    const employeeNumber = await UserModel.find({ employeeNumber: req.body.email });
+    const employeeNumber = await UserModel.find({ employeeNumber: req.body.employeeNumber });
 
     if (checkExistGmail.length > 0) {
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
@@ -94,7 +94,7 @@ export const signUp = async (
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
     }
     req.body.password = await hashPassword(req.body.password);
-
+    await UserModel.create(req.body)
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       ResponseMessage.SIGN_UP_SUCCESS,
