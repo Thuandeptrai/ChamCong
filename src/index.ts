@@ -27,14 +27,7 @@ const allowOrigin = ['*']
 const corsOption: CorsOptions = {
   credentials: true,
   origin: '*',
-  allowedHeaders: [
-    'Origin',
-    'Content-Type',
-    'Accept',
-    'x-access-token',
-    'authorization',
-    'x-signature',
-  ],
+
   methods: 'GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE',
   preflightContinue: false,
 };

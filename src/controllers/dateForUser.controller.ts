@@ -1,6 +1,6 @@
 import { HttpStatusCode } from 'axios';
 import { NextFunction, Request, Response } from 'express';
-import Joi from 'joi';
+import Joi, { number } from 'joi';
 import moment from 'moment';
 import dateToCheck from '../models/DateToCheck.model';
 import ticketForUser from '../models/Ticket.model';
@@ -8,6 +8,7 @@ import { RESPONSE_STATUS } from '../utils';
 import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { responseModel } from '../utils/responseModel';
+import workRecordForUser from '../models/workList.model';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
@@ -50,12 +51,20 @@ export const createDateForUser = async (
     const unixDateOut = dateOut.unix();
     // end of conversion
     let ticket;
+    let workRecord;
     if (diffFromNow.asHours() >= 24 || findTicketforUser.length === 0) {
       ticket = await ticketForUser.create({
         userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
         userId: req.body.thisUser._id,
+      });
+
+      workRecord = await workRecordForUser.create({
+        dateWork: moment().unix(),
+        workHour: 0,
+        userId: req.body.thisUser._id,
+        isEnough: false,
       });
     } else {
       const dateIn = findTicketforUser[0].userDateIn;
@@ -90,8 +99,12 @@ export const checkOutForUser = async (
 ) => {
   try {
     const findTicketforUser: any = await ticketForUser
-      .find({})
+      .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' });
+    const findWorkRecord: any = await workRecordForUser
+      .find({ userId: req.body.thisUser._id })
+      .sort({ dateWork: 'descending' });
+
     console.log(findTicketforUser.length);
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
@@ -102,6 +115,19 @@ export const checkOutForUser = async (
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
         dateIn.push(moment().unix());
+        let diffInHours = 0
+        for(let i = 0; i < findTicketforUser[0].userDateIn.length; i++)
+        {
+          if(dateIn[i] !== undefined)
+          {
+            const moment1 = moment.unix(findTicketforUser[0].userDateIn[i]); // Convert Unix timestamp to Moment.js object
+            const moment2 = moment.unix(dateIn[i]);
+            diffInHours = diffInHours + Number( moment.duration(moment2.diff(moment1)).asHours());
+          }
+        }
+        await workRecordForUser.findOneAndUpdate({userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork},{
+          workHour:diffInHours, isEnough: diffInHours >= 8 ? true: false
+        })
         ticket = await ticketForUser.findByIdAndUpdate(
           findTicketforUser[0]._id,
           {
@@ -132,7 +158,7 @@ export const getAllDateForUser = async (
       const findTicketforUser: any = await ticketForUser
         .find({})
         .sort({ DateIn: 'descending' });
-      const  count = await ticketForUser.find({}).count()
+      const count = await ticketForUser.find({}).count();
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
         ResponseMessage.CREATE_DATE_SUCCESS,
@@ -140,18 +166,21 @@ export const getAllDateForUser = async (
         count
       );
       return res.status(200).json(response);
-    }else{
+    } else {
       const findTicketforUser: any = await ticketForUser
-      .find({ userId: req.body.thisUser._id })
-      .sort({ DateIn: 'descending' });
-      const  count = await ticketForUser.find({ userId: req.body.thisUser._id }).count()
+        .find({ userId: req.body.thisUser._id })
+        .sort({ DateIn: 'descending' });
+      const count = await ticketForUser
+        .find({ userId: req.body.thisUser._id })
+        .count();
 
-    const response = responseModel(
-      RESPONSE_STATUS.SUCCESS,
-      ResponseMessage.CREATE_DATE_SUCCESS,
-      findTicketforUser, count
-    );
-    return res.status(200).json(response)
+      const response = responseModel(
+        RESPONSE_STATUS.SUCCESS,
+        ResponseMessage.CREATE_DATE_SUCCESS,
+        findTicketforUser,
+        count
+      );
+      return res.status(200).json(response);
     }
   } catch (error) {
     console.log(error);

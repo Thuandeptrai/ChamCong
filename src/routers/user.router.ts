@@ -6,9 +6,11 @@ const router = Router();
 // check token
 router.get('/init', authenticate, checkValidToken)
 // dang ky  cho admin
+router.get('/initForAdmin', authenticateforAdmin, checkValidToken)
+
 router.post('/register',authenticateforAdmin, signUp)
 // update
-router.post('/:userId', updateUser)
+router.post('/:userId',authenticateforAdmin, updateUser)
 // get alll user
 router.get("/getAllUser", authenticateforAdmin , getAllUser)
 

@@ -119,6 +119,7 @@ export const signUp = async (
     email: Joi.string().email(),
     department: Joi.string(),
     isAdmin: Joi.string().required(),
+    thisUser: Joi.object()
   });
   try {
     const checkValidBody = schema.validate(req.body);
