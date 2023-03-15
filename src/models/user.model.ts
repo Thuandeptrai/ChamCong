@@ -20,6 +20,7 @@ const UserSchema: Schema = new Schema(
     refreshtoken: { type: String, required: false },
     isAdmin:{type:String, default:false, required: false},
     department:{type:String, default:false, required: false},
+    salaryReate:{type:Number, required:false},
     verified: {
       type: Boolean,
       default: true
