@@ -132,8 +132,7 @@ export const checkOutForUser = async (
         second: 0,
       })
       .unix();
-    console.log(' Start', setLeisureTimeStart);
-    console.log('end', setLeisureTimeEnd);
+ 
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
@@ -143,6 +142,10 @@ export const checkOutForUser = async (
         throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
+        const dateOut = findTicketforUser[0].userDateIn;
+
+        if(dateIn.length + 1 === dateOut.length)
+        {
 
         dateIn.push(moment().unix());
         let diffInHours = 0;
@@ -208,6 +211,7 @@ export const checkOutForUser = async (
           { new: true }
         );
       }
+    }
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
         ResponseMessage.CREATE_DATE_SUCCESS,
