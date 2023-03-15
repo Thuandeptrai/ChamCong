@@ -1,6 +1,6 @@
 import { HttpStatusCode } from 'axios';
 import { NextFunction, Request, Response } from 'express';
-import Joi, { number } from 'joi';
+import Joi, { any, number } from 'joi';
 import moment from 'moment';
 import dateToCheck from '../models/DateToCheck.model';
 import ticketForUser from '../models/Ticket.model';
@@ -163,10 +163,15 @@ export const checkOutForUser = async (
             ) {
               moment2 = setLeisureTimeStart
             }
-           
-            diffInHours =
+            if(moment1 !== 0 && moment2 !== 0)
+            {
+              moment1 = moment.unix(moment1 as any)
+              moment2 = moment.unix(moment2 as any)
+              diffInHours =
               diffInHours +
               Number(moment.duration(moment2.diff(moment1)).asHours());
+            }
+     
           }
         }
 
