@@ -16,7 +16,7 @@ function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   return moment.duration(now.diff(timestampMoment));
 }
 function inRange(x: any, min: any, max: any) {
-  return (x - min) * (x - max) <= 0;
+  return x >= min && x <= max;
 }
 
 export const createDateForUser = async (
@@ -65,7 +65,7 @@ export const createDateForUser = async (
         leisureTimeEnd: findTicket[0].leisureTimeEnd,
         userId: req.body.thisUser._id,
       });
-      const currentTime = moment().format('dd/MM/YY');
+      const currentTime = moment().format('DD/MM/YY');
 
       workRecord = await workRecordForUser.create({
         dateWork: moment().unix(),
@@ -128,13 +128,14 @@ export const checkOutForUser = async (
         second: 0,
       })
       .unix();
-    console.log(setLeisureTimeStart);
-
+    console.log(' Start', setLeisureTimeStart);
+    console.log('end', setLeisureTimeEnd);
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
       let ticket;
       if (diffFromNow.asHours() >= 24) {
+        console.log('asdasd');
         throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
@@ -143,30 +144,49 @@ export const checkOutForUser = async (
         let diffInHours = 0;
         for (let i = 0; i < findTicketforUser[0].userDateIn.length; i++) {
           if (dateIn[i] !== undefined) {
-            let moment1: any = moment.unix(findTicketforUser[0].userDateIn[i]); // Convert Unix timestamp to Moment.js object
-            let moment2: any = moment.unix(dateIn[i]);
-            if (inRange(moment1.unix(), leisureTimeStart, leisureTimeEnd)) {
-              moment1 = leisureTimeEnd;
-            } else if (
-              inRange(moment2.unix(), leisureTimeStart, leisureTimeEnd)
+            let moment1: any = findTicketforUser[0].userDateIn[i]; // Convert Unix timestamp to Moment.js object
+            let moment2: any = dateIn[i];
+
+            if (
+              moment1 >= setLeisureTimeStart &&
+              moment1 <= setLeisureTimeEnd
             ) {
-              moment2 = setLeisureTimeStart;
+              if (moment2 >= setLeisureTimeEnd) {
+                moment1 = setLeisureTimeEnd
+              }else{
+                moment1 =0 
+                moment2= 0
+              }
+            } else if (
+              moment2 >= setLeisureTimeStart &&
+              moment2 <= setLeisureTimeEnd
+            ) {
+              moment2 = setLeisureTimeStart
             }
+           
             diffInHours =
               diffInHours +
               Number(moment.duration(moment2.diff(moment1)).asHours());
           }
         }
-          await workRecordForUser.findOneAndUpdate({userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork},{
-            workHour:diffInHours, isEnough: diffInHours >= 8 ? true: false
-          })
-          ticket = await ticketForUser.findByIdAndUpdate(
-            findTicketforUser[0]._id,
-            {
-              userDateOut: dateIn,
-            },
-            { new: true }
-          );
+
+        await workRecordForUser.findOneAndUpdate(
+          {
+            userId: req.body.thisUser._id,
+            dateWork: findWorkRecord[0].dateWork,
+          },
+          {
+            workHour: diffInHours,
+            isEnough: diffInHours >= 8 ? true : false,
+          }
+        );
+        ticket = await ticketForUser.findByIdAndUpdate(
+          findTicketforUser[0]._id,
+          {
+            userDateOut: dateIn,
+          },
+          { new: true }
+        );
       }
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
@@ -177,7 +197,10 @@ export const checkOutForUser = async (
     } else {
       return res.status(500).json({ Data: 'Do not find Your ID' });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 export const getAllDateForUser = async (
