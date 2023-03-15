@@ -3,7 +3,8 @@ const Ticket = new mongoose.Schema({
     userDateIn: Array,
     DateIn: Number,
     DateOut: Number,
-    leisureTime: String,
+    leisureTimeStart:String,
+    leisureTimeEnd:String,
     userId: String,
     userDateOut: Array,
   });

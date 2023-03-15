@@ -57,6 +57,8 @@ export const createDateForUser = async (
         userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
+        leisureTimeStart:findTicket[0].leisureTimeStart,
+        leisureTimeEnd:findTicket[0].leisureTimeEnd,
         userId: req.body.thisUser._id,
       });
       const currentTime = moment().format("dd/MM/YY")
@@ -71,7 +73,6 @@ export const createDateForUser = async (
     } else {
       const dateIn = findTicketforUser[0].userDateIn;
       dateIn.push(moment().unix());
-      console.log(dateIn);
       ticket = await ticketForUser.findByIdAndUpdate(
         findTicketforUser[0]._id,
         {
