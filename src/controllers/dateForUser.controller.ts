@@ -57,6 +57,7 @@ export const createDateForUser = async (
         userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
+        lateDate:findTicket[0].lateDate,
         leisureTimeStart:findTicket[0].leisureTimeStart,
         leisureTimeEnd:findTicket[0].leisureTimeEnd,
         userId: req.body.thisUser._id,
@@ -107,6 +108,20 @@ export const checkOutForUser = async (
     const findWorkRecord: any = await workRecordForUser
       .find({ userId: req.body.thisUser._id })
       .sort({ dateWork: 'descending' });
+    const leisureTimeStart =  findTicketforUser[0].leisureTimeStart.split(":")
+    const leisureTimeEnd =  findTicketforUser[0].leisureTimeEnd.split(":")
+
+    const setLeisureTimeStart = moment().set({
+      hour: Number(leisureTimeStart[0]),
+      minute: Number(leisureTimeStart[1]),
+      second: 0,
+    }).unix();
+    const setLeisureTimeEnd = moment().set({
+      hour: Number(leisureTimeEnd[0]),
+      minute: Number(leisureTimeEnd[1]),
+      second: 0,
+
+    }).unix()
 
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
@@ -116,6 +131,7 @@ export const checkOutForUser = async (
         throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
+
         dateIn.push(moment().unix());
         let diffInHours = 0
         for(let i = 0; i < findTicketforUser[0].userDateIn.length; i++)
@@ -124,19 +140,21 @@ export const checkOutForUser = async (
           {
             const moment1 = moment.unix(findTicketforUser[0].userDateIn[i]); // Convert Unix timestamp to Moment.js object
             const moment2 = moment.unix(dateIn[i]);
+            if(moment1 > )
             diffInHours = diffInHours + Number( moment.duration(moment2.diff(moment1)).asHours());
           }
         }
-        await workRecordForUser.findOneAndUpdate({userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork},{
-          workHour:diffInHours, isEnough: diffInHours >= 8 ? true: false
-        })
-        ticket = await ticketForUser.findByIdAndUpdate(
-          findTicketforUser[0]._id,
-          {
-            userDateOut: dateIn,
-          },
-          { new: true }
-        );
+      //   await workRecordForUser.findOneAndUpdate({userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork},{
+      //     workHour:diffInHours, isEnough: diffInHours >= 8 ? true: false
+      //   })
+      //   ticket = await ticketForUser.findByIdAndUpdate(
+      //     findTicketforUser[0]._id,
+      //     {
+      //       userDateOut: dateIn,
+      //     },
+      //     { new: true }
+      //   );
+   
       }
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
