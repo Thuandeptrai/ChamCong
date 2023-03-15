@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { checkValidToken, getAllUser, signUp, updateUser } from '../controllers';
+import { checkValidToken, deleteById, getAllUser, signUp, updateUser } from '../controllers';
 import { authenticate, authenticateforAdmin } from '../middleware';
 
 const router = Router();
@@ -13,5 +13,7 @@ router.post('/register',authenticateforAdmin, signUp)
 router.post('/:userId',authenticateforAdmin, updateUser)
 // get alll user
 router.get("/getAllUser", authenticateforAdmin , getAllUser)
+
+router.get("/delete/:id", authenticateforAdmin , deleteById)
 
 export default router;

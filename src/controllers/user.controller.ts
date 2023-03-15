@@ -309,6 +309,25 @@ export const getAllUser = async (
     next(error);
   }
 };
+export const deleteById = async (
+  req: AuthRquest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await UserModel.findByIdAndDelete(req.params.id);
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      'Success Delete',
+      {}
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 
 export const getPaging = async (
   req: AuthRquest,
