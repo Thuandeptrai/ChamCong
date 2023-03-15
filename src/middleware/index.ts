@@ -49,6 +49,7 @@ export const authenticateforAdmin = async (
   next: NextFunction
 ) => {
   const authorization = req.headers['authorization'];
+  console.log('authorization:', authorization)
   if (!authorization) {
     return res.status(401).send({ message: 'No token provided' });
   }
@@ -67,8 +68,10 @@ export const authenticateforAdmin = async (
       }
       try {
         const thisUser = await userModel.findById(decoded.user_id);
+          console.log(thisUser?.isAdmin)
         if (thisUser?.isAdmin === 'True') {
-          req.body.thisUser = thisUser; 
+            
+          req.body.thisUser = thisUser;
           next();
         } else {
           return res.status(401).send({ message: 'You have no permission' });

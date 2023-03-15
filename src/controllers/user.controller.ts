@@ -108,6 +108,10 @@ export const signUp = async (
   res: Response,
   next: NextFunction
 ) => {
+ 
+  req.body.password= "ádasdasd"
+  req.body.password2= "ádasdasd"
+
   const schema = Joi.object({
     name: Joi.string().max(8).required(),
     password: Joi.string().min(6).max(32).required(),
@@ -119,12 +123,15 @@ export const signUp = async (
     email: Joi.string().email(),
     department: Joi.string(),
     isAdmin: Joi.string().required(),
+    phonenumber: Joi.string().required(),
+    thisUser: Joi.object()
   });
   try {
     const checkValidBody = schema.validate(req.body);
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
+
     const checkExistGmail = await UserModel.find({ email: req.body.email });
 
     if (checkExistGmail.length > 0) {
@@ -270,15 +277,14 @@ export const updateUser = async (
     isAdmin: Joi.string(),
   });
   try {
-    if(userId)
-    {
+    if (userId) {
       const checkValidBody = schema.validate(req.body);
       if (checkValidBody.error) {
         throw new Error(checkValidBody.error.message);
       }
-      const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, {new:true})
+      const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, { new: true })
       return res.status(200).json(updateUser);
-    }else{
+    } else {
       throw ErrorResponse(
         HttpStatusCode.BadRequest,
         'UserId id is required'

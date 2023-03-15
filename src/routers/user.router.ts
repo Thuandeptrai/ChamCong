@@ -4,12 +4,14 @@ import { authenticate, authenticateforAdmin } from '../middleware';
 
 const router = Router();
 // check token
-router.get('/init', authenticate, checkValidToken)
+router.get('/init', authenticateforAdmin, checkValidToken)
+router.get('/initForUser', authenticate, checkValidToken)
+
 // dang ky  cho admin
-router.post('/register',authenticateforAdmin, signUp)
+router.post('/register', authenticateforAdmin, signUp)
 // update
 router.post('/:userId', updateUser)
 // get alll user
-router.get("/getAllUser", authenticateforAdmin , getAllUser)
+router.get("/getAllUser", authenticateforAdmin, getAllUser)
 
 export default router;

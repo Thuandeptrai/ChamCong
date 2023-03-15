@@ -26,7 +26,7 @@ const allowOrigin = ['*']
 
 const corsOption: CorsOptions = {
   credentials: true,
-  origin: allowOrigin,
+  origin: '*',
   allowedHeaders: [
     'Origin',
     'Content-Type',
