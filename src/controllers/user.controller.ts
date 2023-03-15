@@ -35,7 +35,7 @@ export const login = async (
     }
 
     const checkExist = await UserModel.findOne({ email: req.body.username });
-    const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.employeeNumber });
+    const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.username });
 
     if (!checkExist) {
       throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
@@ -85,12 +85,15 @@ export const signUp = async (
       throw new Error(checkValidBody.error.message);
     }
     const checkExistGmail = await UserModel.find({ email: req.body.email });
+    const employeeNumber = await UserModel.find({ employeeNumber: req.body.email });
 
     if (checkExistGmail.length > 0) {
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
     }
+    if (employeeNumber.length > 0) {
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
+    }
     req.body.password = await hashPassword(req.body.password);
-    const syncUser = await UserModel.create(req.body);
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
