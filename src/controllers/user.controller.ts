@@ -108,17 +108,17 @@ export const signUp = async (
   res: Response,
   next: NextFunction
 ) => {
- 
-  req.body.password= "ádasdasd"
-  req.body.password2= "ádasdasd"
+
+  req.body.password = "ádasdasd"
+  req.body.password2 = "ádasdasd"
 
   const schema = Joi.object({
-    name: Joi.string().max(8).required(),
-    password: Joi.string().min(6).max(32).required(),
+    name: Joi.string().required(),
+    password: Joi.string().min(6).required(),
     password2: Joi.ref('password'),
     employeeNumber: Joi.number().required(),
-    bankName: Joi.string().min(6).max(32).required(),
-    userBankNumber: Joi.string().min(6).max(32).required(),
+    bankName: Joi.string().required(),
+    userBankNumber: Joi.string().required(),
     salary: Joi.number().required(),
     email: Joi.string().email(),
     department: Joi.string(),
@@ -160,7 +160,7 @@ export const getUserDetail = async (
   next: NextFunction
 ) => {
   try {
-    const userDetail = await UserModel.findById(req.user?.id).populate('role');
+    const userDetail = await UserModel.findById(req.params?.userId).sort({ createdAt: -1 });
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
@@ -266,7 +266,7 @@ export const updateUser = async (
 ) => {
   const userId = req.params.userId;
   const schema = Joi.object({
-    name: Joi.string().max(8),
+    name: Joi.string(),
     password: Joi.string().min(6).max(32),
     password2: Joi.ref('password'),
     employeeNumber: Joi.number(),
@@ -275,6 +275,9 @@ export const updateUser = async (
     salary: Joi.number(),
     email: Joi.string().email(),
     isAdmin: Joi.string(),
+    phonenumber: Joi.string(),
+    department: Joi.string(),
+    thisUser: Joi.object().allow()
   });
   try {
     if (userId) {
@@ -283,7 +286,7 @@ export const updateUser = async (
         throw new Error(checkValidBody.error.message);
       }
       const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, { new: true })
-      return res.status(200).json(updateUser);
+      return res.status(200).json({ status: 200, message: "Thành công", updateUser });
     } else {
       throw ErrorResponse(
         HttpStatusCode.BadRequest,

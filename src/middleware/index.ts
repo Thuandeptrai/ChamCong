@@ -68,9 +68,9 @@ export const authenticateforAdmin = async (
       }
       try {
         const thisUser = await userModel.findById(decoded.user_id);
-          console.log(thisUser?.isAdmin)
+        console.log(thisUser?.isAdmin)
         if (thisUser?.isAdmin === 'True') {
-            
+
           req.body.thisUser = thisUser;
           next();
         } else {
