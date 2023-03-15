@@ -7,6 +7,7 @@ const Ticket = new mongoose.Schema({
     leisureTimeEnd:String,
     userId: String,
     userDateOut: Array,
+    lateDate: String
   });
   
   // Create a model for the "users" collection using the schema

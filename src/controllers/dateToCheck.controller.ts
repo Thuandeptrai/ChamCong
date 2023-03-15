@@ -26,7 +26,6 @@ export const createDate = async (
       throw new Error(checkValidBody.error.message);
     }
     const TicketCount = await dateToCheck.count({});
-    console.log(TicketCount)
     if (TicketCount < 1) {
       const ticket = await dateToCheck.create(req.body);
       const response = responseModel(

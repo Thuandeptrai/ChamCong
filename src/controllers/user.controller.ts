@@ -35,8 +35,11 @@ export const login = async (
     }
 
     const checkExist = await UserModel.findOne({ email: req.body.username });
+    const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.employeeNumber });
 
     if (!checkExist) {
+      throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
+    } if (!checkExistMSNV) {
       throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
     }
 
