@@ -114,14 +114,14 @@ export const checkOutForUser = async (
     const leisureTimeStart = findTicketforUser[0].leisureTimeStart.split(':');
     const leisureTimeEnd = findTicketforUser[0].leisureTimeEnd.split(':');
 
-    const setLeisureTimeStart = moment()
+    let setLeisureTimeStart:any = moment()
       .set({
         hour: Number(leisureTimeStart[0]),
         minute: Number(leisureTimeStart[1]),
         second: 0,
       })
       .unix();
-    const setLeisureTimeEnd = moment()
+    let setLeisureTimeEnd:any = moment()
       .set({
         hour: Number(leisureTimeEnd[0]),
         minute: Number(leisureTimeEnd[1]),
@@ -165,13 +165,21 @@ export const checkOutForUser = async (
             }
             if(moment1 !== 0 && moment2 !== 0)
             {
+              if(moment1 <= setLeisureTimeStart  &&  moment2 >= setLeisureTimeEnd )
+              {
+                setLeisureTimeStart = moment.unix(setLeisureTimeStart as any)
+                setLeisureTimeEnd = moment.unix(setLeisureTimeEnd as any)
+                diffInHours = diffInHours - moment.duration(setLeisureTimeEnd.diff(setLeisureTimeStart)).asHours()
+              }
               moment1 = moment.unix(moment1 as any)
               moment2 = moment.unix(moment2 as any)
+             
               diffInHours =
               diffInHours +
               Number(moment.duration(moment2.diff(moment1)).asHours());
+              
             }
-     
+            
           }
         }
 
