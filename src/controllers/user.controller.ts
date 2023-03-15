@@ -19,51 +19,6 @@ const NAME_SPACE = 'User';
 
 
 
-export const addUserCredit = async (
-  req: AuthRquest,
-  res: Response,
-  next: NextFunction
-) => {
-  const schema = Joi.object({
-    credit: Joi.number().required(),
-  });
-  try {
-    const check = schema.validate(req.body);
-    if (check.error) {
-      throw new Error(check.error.message);
-    }
-    const userId = req.params.id;
-    const user = await UserModel.findOne({ id: userId });
-    const addClientCredit = await callApiViettel({
-      call: 'addClientCredit',
-      client_id: user?.client_id,
-      amount: Number(req.body.credit),
-    });
-
-    if (!addClientCredit.success) {
-      throw ErrorResponse(
-        HttpStatusCode.InternalServerError,
-        'Nạp tiền thất bại do lỗi từ hệ thống'
-      );
-    }
-
-    const updateUserCredit = await userModel.findByIdAndUpdate(userId, {
-      $inc: {
-        credit: Number(req.body.credit),
-      },
-    });
-
-    const response = responseModel(
-      RESPONSE_STATUS.SUCCESS,
-      'Nạp tiền thành công',
-      true
-    );
-    return res.status(200).json(response);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const login = async (
   req: Request,
   res: Response,
@@ -309,6 +264,25 @@ export const getAllUser = async (
       RESPONSE_STATUS.SUCCESS,
       'Get All User Success',
       users
+    );
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const deleteById = async (
+  req: AuthRquest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const users = await UserModel.findByIdAndDelete(req.params.id);
+    const response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      'Success Delete',
+      {}
     );
 
     return res.status(200).json(response);

@@ -13,12 +13,11 @@ export const createDate = async (
   next: NextFunction
 ) => {
   const schema = Joi.object({
-    userDateIn: Joi.number().required(),
-    DateIn: Joi.number().required(),
-    DateOut: Joi.number().required(),
-    dateOut: Joi.number().required(),
-    userId: Joi.string().required(),
-    userDateOut: Joi.number().required()
+    dateIn: Joi.string(),
+    lateDate: Joi.string(),
+    leisureTimeStart: Joi.string(),
+    leisureTimeEnd: Joi.string(),
+    dateOut: Joi.string(),
   });
 
   try {
@@ -27,7 +26,8 @@ export const createDate = async (
       throw new Error(checkValidBody.error.message);
     }
     const TicketCount = await dateToCheck.count({});
-    if (TicketCount < 0) {
+    console.log(TicketCount)
+    if (TicketCount < 1) {
       const ticket = await dateToCheck.create(req.body);
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
@@ -50,10 +50,11 @@ export const updateDate = async (
   next: NextFunction
 ) => {
   const schema = Joi.object({
-    dateIn: Joi.number(),
-    lateDate: Joi.number(),
-    leisure: Joi.number(),
-    dateOut: Joi.number(),
+    dateIn: Joi.string(),
+    lateDate: Joi.string(),
+    leisureTimeStart: Joi.string(),
+    leisureTimeEnd: Joi.string(),
+    dateOut: Joi.string(),
   });
   const id = req.params.DateId;
   try {

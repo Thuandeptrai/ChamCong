@@ -3,10 +3,10 @@ const Ticket = new mongoose.Schema({
     userDateIn: Array,
     DateIn: Number,
     DateOut: Number,
-    leisureTime: String,
+    leisureTimeStart:String,
+    leisureTimeEnd:String,
     userId: String,
     userDateOut: Array,
-    isEnough: {Boolean, default: false},
   });
   
   // Create a model for the "users" collection using the schema

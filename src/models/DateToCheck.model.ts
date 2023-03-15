@@ -2,7 +2,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 const DateToCheck = new mongoose.Schema({
     dateIn: String,
     lateDate: String,
-    leisure: String,
+    leisureTimeStart:String,
+    leisureTimeEnd:String,
     dateOut: String,
   });
   
