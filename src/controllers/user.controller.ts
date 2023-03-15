@@ -34,14 +34,15 @@ export const login = async (
       throw new Error(checkValidBody.error.message);
     }
 
-    const checkExist = await UserModel.findOne({ email: req.body.username });
+    let checkExist = await UserModel.findOne({ email: req.body.username });
     const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.username });
 
     if (!checkExist) {
-      throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
-    } if (!checkExistMSNV) {
-      throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
-    }
+      if (!checkExistMSNV) {
+        throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
+      }
+      checkExist = checkExistMSNV
+    } 
 
     const verify = await verifyPassword(req.body.password, checkExist.password);
 
