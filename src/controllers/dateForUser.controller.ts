@@ -59,11 +59,13 @@ export const createDateForUser = async (
         DateOut: Number(unixDateOut),
         userId: req.body.thisUser._id,
       });
-
+      const currentTime = moment().format("MM/YY")
+   
       workRecord = await workRecordForUser.create({
         dateWork: moment().unix(),
         workHour: 0,
         userId: req.body.thisUser._id,
+        month: currentTime,
         isEnough: false,
       });
     } else {

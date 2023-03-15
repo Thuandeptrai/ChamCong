@@ -4,6 +4,7 @@ const workRecord = new mongoose.Schema({
   workHour: Number,
   userId: String,
   isEnough: { Boolean, default: false },
+  month: String
 });
 
 // Create a model for the "users" collection using the schema
