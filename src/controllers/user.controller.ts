@@ -12,6 +12,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { hashPassword, verifyPassword } from '../utils/auth';
 import { responseModel } from '../utils/responseModel';
+import { checkOutForUser } from './dateForUser.controller';
 
 const NAME_SPACE = 'User';
 
@@ -64,8 +65,8 @@ export const signUp = async (
   next: NextFunction
 ) => {
 
-  req.body.password = "ádasdasd"
-  req.body.password2 = "ádasdasd"
+  // req.body.password = "ádasdasd"
+  // req.body.password2 = "ádasdasd"
 
   const schema = Joi.object({
     name: Joi.string().required(),
@@ -87,8 +88,12 @@ export const signUp = async (
       throw new Error(checkValidBody.error.message);
     }
 
-    const checkExistGmail = await UserModel.find({ email: req.body.email });
+    // const checkExistGmail = await UserModel.find({ email: req.body.email });
+    // const checkExistEmployeeNumber = await UserModel.findOne({ employeeNumber: req.body.employeeNumber })
+    // const checkExistPhoneNumber = await UserModel.findOne({ phonenumber: req.body?.phonenumber })
 
+
+    const [checkExistGmail, checkExistEmployeeNumber, checkExistPhoneNumber] = await Promise.all([await UserModel.find({ email: req.body.email }), await UserModel.findOne({ employeeNumber: req.body.employeeNumber }), await UserModel.findOne({ phonenumber: req.body?.phonenumber })])
     if (checkExistGmail.length > 0) {
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
     }
@@ -219,14 +224,13 @@ export const updateUser = async (
   res: Response,
   next: NextFunction
 ) => {
+
   const userId = req.params.userId;
   const schema = Joi.object({
     name: Joi.string(),
-    password: Joi.string().min(6).max(32),
-    password2: Joi.ref('password'),
     employeeNumber: Joi.number(),
-    bankName: Joi.string().min(6).max(32),
-    userBankNumber: Joi.string().min(6).max(32),
+    bankName: Joi.string().max(32),
+    userBankNumber: Joi.string(),
     salary: Joi.number(),
     email: Joi.string().email(),
     isAdmin: Joi.string(),
@@ -259,7 +263,18 @@ export const getAllUser = async (
   next: NextFunction
 ) => {
   try {
-    const users = await UserModel.find({});
+    const { name, department } = req.query;
+    const objSearch: { [key: string]: any } = {};
+    if (name) {
+      objSearch["name"] = { $regex: ".*" + name + ".*" }
+    }
+    if (department && department !== "all") {
+      objSearch["department"] = { $regex: ".*" + name + ".*" }
+    }
+
+    console.log(req.body?.thisUser)
+    const users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
+    console.log(users)
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       'Get All User Success',
@@ -278,6 +293,7 @@ export const deleteById = async (
   next: NextFunction
 ) => {
   try {
+    console.log(`adsads`, req?.params?.id);
     const users = await UserModel.findByIdAndDelete(req.params.id);
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,

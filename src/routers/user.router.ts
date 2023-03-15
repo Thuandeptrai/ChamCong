@@ -8,19 +8,21 @@ router.get('/init', authenticateforAdmin, checkValidToken)
 router.get('/initForUser', authenticate, checkValidToken)
 
 // dang ky  cho admin
-router.post('/register', authenticateforAdmin, signUp)
+router.post('/register', signUp)
 // update
-router.patch('/:userId', authenticateforAdmin, updateUser)
+router.put('update/:userId', authenticateforAdmin, updateUser)
 
-//get detail
-router.get('/:userId', authenticateforAdmin, getUserDetail)
 // get all user
 
 router.get("/getAllUser", authenticateforAdmin, getAllUser)
+//get detail
+
+router.get('/:userId', authenticateforAdmin, getUserDetail)
+
 //init
 router.get('/initForAdmin', authenticateforAdmin, checkValidToken)
 
 //delete
-router.get("/delete/:id", authenticateforAdmin, deleteById)
+router.delete("/delete/:id", authenticateforAdmin, deleteById)
 
 export default router;
