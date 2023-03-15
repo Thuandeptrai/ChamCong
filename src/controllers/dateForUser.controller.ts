@@ -105,7 +105,6 @@ export const checkOutForUser = async (
       .find({ userId: req.body.thisUser._id })
       .sort({ dateWork: 'descending' });
 
-    console.log(findTicketforUser.length);
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
