@@ -86,10 +86,11 @@ export const getAllDate = async (
   next: NextFunction
 ) => {
   const schema = Joi.object({
-    dateIn: Joi.number(),
-    lateDate: Joi.number(),
-    leisure: Joi.number(),
-    dateOut: Joi.number(),
+    dateIn: Joi.string(),
+    lateDate: Joi.string(),
+    leisureTimeStart:Joi.string(),
+    leisureTimeEnd:Joi.string(),
+    dateOut: Joi.string(),
   });
   const id = req.params.DateId;
   try {
