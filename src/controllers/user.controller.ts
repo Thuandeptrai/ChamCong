@@ -266,10 +266,10 @@ export const getAllUser = async (
     const { name, department } = req.query;
     const objSearch: { [key: string]: any } = {};
     if (name) {
-      objSearch["name"] = { $regex: ".*" + name + ".*" }
+      objSearch["name"] = { $regex: ".*" + name + ".*", $options: "i", }
     }
     if (department && department !== "all") {
-      objSearch["department"] = { $regex: ".*" + name + ".*" }
+      objSearch["department"] = department
     }
 
     console.log(req.body?.thisUser)

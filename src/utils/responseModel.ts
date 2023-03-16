@@ -1,6 +1,6 @@
-export function responseModel<T>(status: number, message: string ,data: T, count?: number) {
+export function responseModel<T>(status: number, message: string, data: T, count?: number) {
     return {
-        status, 
+        status,
         message,
         data,
         count

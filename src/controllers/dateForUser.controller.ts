@@ -57,12 +57,12 @@ export const createDateForUser = async (
         userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
-        leisureTimeStart:findTicket[0].leisureTimeStart,
-        leisureTimeEnd:findTicket[0].leisureTimeEnd,
+        leisureTimeStart: findTicket[0].leisureTimeStart,
+        leisureTimeEnd: findTicket[0].leisureTimeEnd,
         userId: req.body.thisUser._id,
       });
       const currentTime = moment().format("dd/MM/YY")
-   
+
       workRecord = await workRecordForUser.create({
         dateWork: moment().unix(),
         workHour: 0,
@@ -118,17 +118,15 @@ export const checkOutForUser = async (
         const dateIn = findTicketforUser[0].userDateOut;
         dateIn.push(moment().unix());
         let diffInHours = 0
-        for(let i = 0; i < findTicketforUser[0].userDateIn.length; i++)
-        {
-          if(dateIn[i] !== undefined)
-          {
+        for (let i = 0; i < findTicketforUser[0].userDateIn.length; i++) {
+          if (dateIn[i] !== undefined) {
             const moment1 = moment.unix(findTicketforUser[0].userDateIn[i]); // Convert Unix timestamp to Moment.js object
             const moment2 = moment.unix(dateIn[i]);
-            diffInHours = diffInHours + Number( moment.duration(moment2.diff(moment1)).asHours());
+            diffInHours = diffInHours + Number(moment.duration(moment2.diff(moment1)).asHours());
           }
         }
-        await workRecordForUser.findOneAndUpdate({userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork},{
-          workHour:diffInHours, isEnough: diffInHours >= 8 ? true: false
+        await workRecordForUser.findOneAndUpdate({ userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork }, {
+          workHour: diffInHours, isEnough: diffInHours >= 8 ? true : false
         })
         ticket = await ticketForUser.findByIdAndUpdate(
           findTicketforUser[0]._id,
@@ -147,7 +145,7 @@ export const checkOutForUser = async (
     } else {
       return res.status(500).json({ Data: 'Do not find Your ID' });
     }
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const getAllDateForUser = async (
