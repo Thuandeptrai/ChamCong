@@ -35,17 +35,17 @@ export const createDateForUser = async (
       .sort({ DateIn: 'descending' });
 
     // Convert Date Time like 12:00 To UnixTime
-    const findWorkByMonth = await salaryByMonth.find({userId: req.body.thisUser._id}).sort({month: 'descending'})
-    if(findWorkByMonth.length !== 0)
-    {
-      if(Number(getCurrentMonth) !==Number(findWorkByMonth[0].month) && Number(getCurrentYear)  === Number(findWorkByMonth[0].year)){
+    const findWorkByMonth = await salaryByMonth.find({ userId: req.body.thisUser._id }).sort({ month: 'descending' })
+    if (findWorkByMonth.length !== 0) {
+      if (Number(getCurrentMonth) !== Number(findWorkByMonth[0].month) && Number(getCurrentYear) === Number(findWorkByMonth[0].year)) {
         await salaryByMonth.create({
           month: getCurrentMonth,
           year: getCurrentYear,
           totalWorkInMonth: 0,
           salaryOfUser: 0,
-          userId:req.body.thisUser._id,
+          userId: req.body.thisUser._id,
           rateWorkByMonth: getdate
+
 
         })
       }
@@ -55,7 +55,7 @@ export const createDateForUser = async (
         year: getCurrentYear,
         totalWorkInMonth: 0,
         salaryOfUser: 0,
-        userId:req.body.thisUser._id,
+        userId: req.body.thisUser._id,
         rateWorkByMonth: getdate
       })
     }
@@ -220,7 +220,9 @@ export const checkOutForUser = async (
               }
             }
           }
+          await salaryByMonth.findOneAndUpdate({ userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear }, {
 
+          })
           await workRecordForUser.findOneAndUpdate(
             {
               userId: req.body.thisUser._id,
