@@ -111,10 +111,9 @@ export const checkOutForUser = async (
   try {
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
-      .sort({ DateIn: 'descending' });
+      .sort({ DateIn: 'descending' }).populate('userId');
     const findWorkRecord: any = await workRecordForUser
-      .find({ userId: req.body.thisUser._id })
-      .sort({ dateWork: 'descending' });
+      .find({ userId: req.body.thisUser._id }).sort({ dateWork: 'descending' }).populate('userId');
     const leisureTimeStart = findTicketforUser[0].leisureTimeStart.split(':');
     const leisureTimeEnd = findTicketforUser[0].leisureTimeEnd.split(':');
 
@@ -215,7 +214,7 @@ export const checkOutForUser = async (
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
         ResponseMessage.CREATE_DATE_SUCCESS,
-        ticket || {}
+        findTicketforUser || {}
       );
       return res.status(200).json(response);
     } else {

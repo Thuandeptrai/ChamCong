@@ -5,7 +5,7 @@ const Ticket = new mongoose.Schema({
     DateOut: Number,
     leisureTimeStart:String,
     leisureTimeEnd:String,
-    userId: String,
+   userId: {type: Schema.Types.ObjectId, ref: 'user'},
     userDateOut: Array,
     lateDate: String
   });
