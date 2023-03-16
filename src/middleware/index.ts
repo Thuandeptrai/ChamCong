@@ -16,6 +16,7 @@ export const authenticate = async (
   next: NextFunction
 ) => {
   const authorization = req.headers['authorization'];
+  console.log('authorization:', authorization)
   if (!authorization) {
     return res.status(401).send({ message: 'No token provided' });
   }

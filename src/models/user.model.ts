@@ -18,9 +18,9 @@ const UserSchema: Schema = new Schema(
     access: { type: Array, required: false, default: [] },
     accesstoken: { type: String, required: false },
     refreshtoken: { type: String, required: false },
-    isAdmin:{type:String, default:false, required: false},
-    department:{type:String, default:false, required: false},
-    salaryReate:{type:Number, required:false},
+    isAdmin: { type: String, default: false, required: false },
+    department: { type: String, default: false, required: false },
+    salaryRate: { type: Number, required: false },
     verified: {
       type: Boolean,
       default: true

@@ -8,7 +8,6 @@ router.get('/init', authenticateforAdmin, checkValidToken)
 router.get('/initForUser', authenticate, checkValidToken)
 
 // dang ky  cho admin
-router.post('/register', signUp)
 // update
 router.put('update/:userId', authenticateforAdmin, updateUser)
 
@@ -23,7 +22,7 @@ router.get('/:userId', authenticateforAdmin, getUserDetail)
 router.get('/initForAdmin', authenticateforAdmin, checkValidToken)
 
 //delete
-router.post('/register', signUp)
+router.post('/register', authenticateforAdmin, signUp)
 // update
 router.post('/:userId', authenticateforAdmin, updateUser)
 // get alll user

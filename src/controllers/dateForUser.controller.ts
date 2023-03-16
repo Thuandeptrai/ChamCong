@@ -25,6 +25,8 @@ export const createDateForUser = async (
   next: NextFunction
 ) => {
   try {
+    const getCurrentMonth = moment().month()
+    const getCurrentYear = moment().year()
     const findTicket: any = await dateToCheck.find({});
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
@@ -111,10 +113,9 @@ export const checkOutForUser = async (
   try {
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
-      .sort({ DateIn: 'descending' });
+      .sort({ DateIn: 'descending' }).populate('userId');
     const findWorkRecord: any = await workRecordForUser
-      .find({ userId: req.body.thisUser._id })
-      .sort({ dateWork: 'descending' });
+      .find({ userId: req.body.thisUser._id }).sort({ dateWork: 'descending' }).populate('userId');
     const leisureTimeStart = findTicketforUser[0].leisureTimeStart.split(':');
     const leisureTimeEnd = findTicketforUser[0].leisureTimeEnd.split(':');
 
@@ -138,22 +139,9 @@ export const checkOutForUser = async (
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
       let ticket;
       if (diffFromNow.asHours() >= 24) {
-        console.log('asdasd');
         throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
-        dateIn.push(moment().unix());
-        let diffInHours = 0
-        for (let i = 0; i < findTicketforUser[0].userDateIn.length; i++) {
-          if (dateIn[i] !== undefined) {
-            const moment1 = moment.unix(findTicketforUser[0].userDateIn[i]); // Convert Unix timestamp to Moment.js object
-            const moment2 = moment.unix(dateIn[i]);
-            diffInHours = diffInHours + Number(moment.duration(moment2.diff(moment1)).asHours());
-          }
-        }
-        await workRecordForUser.findOneAndUpdate({ userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork }, {
-          workHour: diffInHours, isEnough: diffInHours >= 8 ? true : false
-        })
         const dateOut = findTicketforUser[0].userDateIn;
 
         if (dateIn.length + 1 === dateOut.length) {
