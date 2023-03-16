@@ -23,13 +23,11 @@ export const getAllWorkListByMonth = async (
         try{
             const workList = await workRecordForUser.find({})
             const dataList = []
-            console.log(month)
-            console.log(Year)
+          
             for(let i = 0; i < workList.length; i++ )
             {
                 const time : any  = workList[i].month?.split("/")
-                console.log(time[1])
-                console.log(time[2])
+             
                 if( Number(time[1]) === Number(month)  && Number(time[2]) === Number(Year))
                 {
                     dataList.push(workList[i])
