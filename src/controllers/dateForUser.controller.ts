@@ -28,51 +28,35 @@ export const createDateForUser = async (
     const getCurrentMonth = moment().month()
     const getCurrentYear = moment().year()
     const getCurrentDay = moment().date()
-    const getdate = calculateWorkDate( getCurrentMonth, getCurrentYear)
+    const getdate = calculateWorkDate(getCurrentMonth, getCurrentYear)
     const findTicket: any = await dateToCheck.find({});
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' });
-    
-    // Convert Date Time like 12:00 To UnixTime
-<<<<<<< HEAD
-    const findWorkByMonth = await salaryByMonth.find({ userId: req.body.thisUser._id }).sort({ month: 'descending' })
-    if (findWorkByMonth.length !== 0) {
 
-      const getMonth = moment.unix(Number(findWorkByMonth[0].month)).format("MM")
-      if (Number(getMonth) !== getCurrentMonth) {
-=======
+    // Convert Date Time like 12:00 To UnixTime
     const findWorkByMonth = await salaryByMonth.find({userId: req.body.thisUser._id}).sort({month: 'descending'})
     if(findWorkByMonth.length !== 0)
     {
       if(Number(getCurrentMonth) !==Number(findWorkByMonth[0].month) && Number(getCurrentYear)  === Number(findWorkByMonth[0].year)){
->>>>>>> 051f7a5cd6ef19999d69152523155e64bc1d231d
         await salaryByMonth.create({
           month: getCurrentMonth,
           year: getCurrentYear,
-          totalWorkInMonth:0,
+          totalWorkInMonth: 0,
           salaryOfUser: 0,
-<<<<<<< HEAD
-          userId: req.body.thisUser._id
-=======
           userId:req.body.thisUser._id,
           rateWorkByMonth: getdate
-        
->>>>>>> 051f7a5cd6ef19999d69152523155e64bc1d231d
+
         })
       }
     } else {
       await salaryByMonth.create({
         month: getCurrentMonth,
         year: getCurrentYear,
-        totalWorkInMonth:0,
+        totalWorkInMonth: 0,
         salaryOfUser: 0,
-<<<<<<< HEAD
-        userId: req.body.thisUser._id
-=======
         userId:req.body.thisUser._id,
         rateWorkByMonth: getdate
->>>>>>> 051f7a5cd6ef19999d69152523155e64bc1d231d
       })
     }
 
@@ -236,7 +220,6 @@ export const checkOutForUser = async (
               }
             }
           }
-<<<<<<< HEAD
 
           await workRecordForUser.findOneAndUpdate(
             {
@@ -256,29 +239,6 @@ export const checkOutForUser = async (
             { new: true }
           );
         }
-=======
-        }
-        // await salaryByMonth.findOneAndUpdate({userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear}, {
-        
-        // })
-        await workRecordForUser.findOneAndUpdate(
-          {
-            userId: req.body.thisUser._id,
-            dateWork: findWorkRecord[0].dateWork,
-          },
-          {
-            workHour: diffInHours,
-            isEnough: diffInHours >= 8 ? true : false,
-          }
-        );
-        ticket = await ticketForUser.findByIdAndUpdate(
-          findTicketforUser[0]._id,
-          {
-            userDateOut: dateIn,
-          },
-          { new: true }
-        );
->>>>>>> 051f7a5cd6ef19999d69152523155e64bc1d231d
       }
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
