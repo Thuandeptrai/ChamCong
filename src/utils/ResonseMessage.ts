@@ -19,5 +19,7 @@ export const ResponseMessage = {
     GET_ACTION_HISTORY_SUCCES: "Lấy lịch sử thao tác thành công",
     LOGIN_FAILED_ACCOUNT_NOT_VERIFY: "Tài khoản chưa được xác thực vui lòng kiểm tra email",
     SIGN_UP_FAILED_EMAIL_EXIST: "Đăng kí thất bại email đã tồn tại",
+    SIGN_UP_FAILED_PHONE_NUMBER_EXIST: "Đăng kí thất bại số điện thoại đã tồn tại",
+    SIGN_UP_FAILED_EMPLOYMENT_EXIST: "Đăng kí thất bại mã số nhân viên đã tồn tại",
 
 }

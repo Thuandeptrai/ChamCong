@@ -12,6 +12,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { hashPassword, verifyPassword } from '../utils/auth';
 import { responseModel } from '../utils/responseModel';
+import { checkOutForUser } from './dateForUser.controller';
 
 const NAME_SPACE = 'User';
 
@@ -33,30 +34,25 @@ export const login = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
+    const checkExist = await UserModel.findOne({ $or: [{ phonenumber: req.body.username }, { employeeNumber: req.body.username }] });
+    if (checkExist) {
+      const verify = await verifyPassword(req.body.password, checkExist.password);
 
-    let checkExist = await UserModel.findOne({ email: req.body.username });
-    const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.username });
-
-    if (!checkExist) {
-      if (!checkExistMSNV) {
-        throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
+      if (!verify) {
+        throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
       }
-      checkExist = checkExistMSNV
-    } 
 
-    const verify = await verifyPassword(req.body.password, checkExist.password);
+      const accessToken = jwt.sign(
+        { user_id: checkExist._id },
+        config.auth.jwtSecretKey,
+        { expiresIn: '1d' }
+      );
 
-    if (!verify) {
-      throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
+      return res.status(HttpStatusCode.Ok).json(accessToken);
+    } else {
+      return res.status(HttpStatusCode.NotFound).json({ status: 0, message: "người dùng không tồn tại", data: {} });
+
     }
-
-    const accessToken = jwt.sign(
-      { user_id: checkExist._id },
-      config.auth.jwtSecretKey,
-      { expiresIn: '1d' }
-    );
-
-    return res.status(HttpStatusCode.Ok).json(accessToken);
   } catch (error: any) {
     next(error);
   }
@@ -67,32 +63,41 @@ export const signUp = async (
   res: Response,
   next: NextFunction
 ) => {
+
+  // req.body.password = "ádasdasd"
+  // req.body.password2 = "ádasdasd"
+
   const schema = Joi.object({
-    name: Joi.string().max(8).required(),
-    password: Joi.string().min(6).max(32).required(),
+    name: Joi.string().required(),
+    password: Joi.string().min(6).required(),
     password2: Joi.ref('password'),
-    employeeNumber: Joi.number().required(),
-    bankName: Joi.string().min(6).max(32).required(),
-    userBankNumber: Joi.string().min(6).max(32).required(),
+    employeeNumber: Joi.string().required(),
+    bankName: Joi.string().required(),
+    userBankNumber: Joi.string().required(),
     salary: Joi.number().required(),
+    salaryReate: Joi.number().required(),
     email: Joi.string().email(),
     department: Joi.string(),
     isAdmin: Joi.string().required(),
-    thisUser: Joi.object()
+    phonenumber: Joi.string().required(),
+    thisUser: Joi.object(),
+    verified: Joi.allow()
   });
   try {
     const checkValidBody = schema.validate(req.body);
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-    const checkExistGmail = await UserModel.find({ email: req.body.email });
-    const employeeNumber = await UserModel.find({ employeeNumber: req.body.employeeNumber });
+    const checkExistEmployeeNumber = await UserModel.findOne({ employeeNumber: req.body.employeeNumber })
+    const checkExistPhoneNumber = await UserModel.findOne({ phonenumber: req.body?.phonenumber })
 
-    if (checkExistGmail.length > 0) {
-      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
+
+    if (checkExistEmployeeNumber) {
+
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMPLOYMENT_EXIST);
     }
-    if (employeeNumber.length > 0) {
-      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
+    if (checkExistPhoneNumber) {
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_PHONE_NUMBER_EXIST);
     }
     req.body.password = await hashPassword(req.body.password);
     await UserModel.create(req.body)
@@ -116,7 +121,7 @@ export const getUserDetail = async (
   next: NextFunction
 ) => {
   try {
-    const userDetail = await UserModel.findById(req.user?.id).populate('role');
+    const userDetail = await UserModel.findById(req.params?.userId).sort({ createdAt: -1 });
 
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
@@ -220,28 +225,29 @@ export const updateUser = async (
   res: Response,
   next: NextFunction
 ) => {
+
   const userId = req.params.userId;
   const schema = Joi.object({
-    name: Joi.string().max(8),
-    password: Joi.string().min(6).max(32),
-    password2: Joi.ref('password'),
+    name: Joi.string(),
     employeeNumber: Joi.number(),
-    bankName: Joi.string().min(6).max(32),
-    userBankNumber: Joi.string().min(6).max(32),
+    bankName: Joi.string().max(32),
+    userBankNumber: Joi.string(),
     salary: Joi.number(),
     email: Joi.string().email(),
     isAdmin: Joi.string(),
+    phonenumber: Joi.string(),
+    department: Joi.string(),
+    thisUser: Joi.object().allow()
   });
   try {
-    if(userId)
-    {
+    if (userId) {
       const checkValidBody = schema.validate(req.body);
       if (checkValidBody.error) {
         throw new Error(checkValidBody.error.message);
       }
-      const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, {new:true})
-      return res.status(200).json(updateUser);
-    }else{
+      const updateUser = await UserModel.findByIdAndUpdate(userId, req.body, { new: true })
+      return res.status(200).json({ status: 200, message: "Thành công", updateUser });
+    } else {
       throw ErrorResponse(
         HttpStatusCode.BadRequest,
         'UserId id is required'
@@ -258,7 +264,18 @@ export const getAllUser = async (
   next: NextFunction
 ) => {
   try {
-    const users = await UserModel.find({});
+    const { name, department } = req.query;
+    const objSearch: { [key: string]: any } = {};
+    if (name) {
+      objSearch["name"] = { $regex: ".*" + name + ".*", $options: "i", }
+    }
+    if (department && department !== "all") {
+      objSearch["department"] = department
+    }
+
+    console.log(req.body?.thisUser)
+    const users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
+    console.log(users)
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       'Get All User Success',
@@ -277,6 +294,7 @@ export const deleteById = async (
   next: NextFunction
 ) => {
   try {
+    console.log(`adsads`, req?.params?.id);
     const users = await UserModel.findByIdAndDelete(req.params.id);
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,

@@ -1,6 +1,6 @@
 export const ErrorResponse = (status: number, message: string) => {
     return {
-        status, 
+        status,
         message
     }
 }

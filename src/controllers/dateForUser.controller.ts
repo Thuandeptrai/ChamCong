@@ -40,7 +40,7 @@ export const createDateForUser = async (
     {
       if(Number(getCurrentMonth) !==Number(findWorkByMonth[0].month) && Number(getCurrentYear)  === Number(findWorkByMonth[0].year)){
         await salaryByMonth.create({
-          month:getCurrentMonth,
+          month: getCurrentMonth,
           year: getCurrentYear,
           totalWorkInMonth:0,
           salaryOfUser: 0,
@@ -49,9 +49,9 @@ export const createDateForUser = async (
         
         })
       }
-    }else{
+    } else {
       await salaryByMonth.create({
-        month:getCurrentMonth,
+        month: getCurrentMonth,
         year: getCurrentYear,
         totalWorkInMonth:0,
         salaryOfUser: 0,
@@ -162,7 +162,7 @@ export const checkOutForUser = async (
         second: 0,
       })
       .unix();
- 
+
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
@@ -173,20 +173,19 @@ export const checkOutForUser = async (
         const dateIn = findTicketforUser[0].userDateOut;
         const dateOut = findTicketforUser[0].userDateIn;
 
-        if(dateIn.length + 1 === dateOut.length)
-        {
+        if (dateIn.length + 1 === dateOut.length) {
 
-        dateIn.push(moment().unix());
-        let diffInHours = 0;
-        for (let i = 0; i < findTicketforUser[0].userDateIn.length; i++) {
-          if (dateIn[i] !== undefined) {
-            let moment1: any = findTicketforUser[0].userDateIn[i]; // Convert Unix timestamp to Moment.js object
-            let moment2: any = dateIn[i];
+          dateIn.push(moment().unix());
+          let diffInHours = 0;
+          for (let i = 0; i < findTicketforUser[0].userDateIn.length; i++) {
+            if (dateIn[i] !== undefined) {
+              let moment1: any = findTicketforUser[0].userDateIn[i]; // Convert Unix timestamp to Moment.js object
+              let moment2: any = dateIn[i];
 
-            if (
-              moment1 >= setLeisureTimeStart &&
-              moment1 <= setLeisureTimeEnd
-            ) {
+              if (
+                moment1 >= setLeisureTimeStart &&
+                moment1 <= setLeisureTimeEnd
+              ) {
                 if (moment2 >= setLeisureTimeEnd) {
                   moment1 = setLeisureTimeEnd;
                 } else {
@@ -198,22 +197,22 @@ export const checkOutForUser = async (
                 moment2 <= setLeisureTimeEnd
               ) {
                 moment2 = setLeisureTimeStart;
-            }
-            if (moment1 !== 0 && moment2 !== 0) {
-              if (
-                moment1 <= setLeisureTimeStart &&
-                moment2 >= setLeisureTimeEnd
-              ) {
-                setLeisureTimeStart = moment.unix(setLeisureTimeStart as any);
-                setLeisureTimeEnd = moment.unix(setLeisureTimeEnd as any);
-                diffInHours =
-                  diffInHours -
-                  moment
-                    .duration(setLeisureTimeEnd.diff(setLeisureTimeStart))
-                    .asHours();
               }
-              moment1 = moment.unix(moment1 as any);
-              moment2 = moment.unix(moment2 as any);
+              if (moment1 !== 0 && moment2 !== 0) {
+                if (
+                  moment1 <= setLeisureTimeStart &&
+                  moment2 >= setLeisureTimeEnd
+                ) {
+                  setLeisureTimeStart = moment.unix(setLeisureTimeStart as any);
+                  setLeisureTimeEnd = moment.unix(setLeisureTimeEnd as any);
+                  diffInHours =
+                    diffInHours -
+                    moment
+                      .duration(setLeisureTimeEnd.diff(setLeisureTimeStart))
+                      .asHours();
+                }
+                moment1 = moment.unix(moment1 as any);
+                moment2 = moment.unix(moment2 as any);
 
               diffInHours =
                 diffInHours +

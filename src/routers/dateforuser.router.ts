@@ -4,8 +4,8 @@ import { authenticate } from '../middleware';
 
 const router = Router();
 
-router.post('/createDateForUser',authenticate,createDateForUser );
-router.post('/checkOutDateForUser',authenticate, checkOutForUser);
-router.get("/getAll",authenticate, getAllDateForUser)
+router.post('/createDateForUser', authenticate, createDateForUser);
+router.post('/checkOutDateForUser', authenticate, checkOutForUser);
+router.get("/getAll", authenticate, getAllDateForUser)
 
 export default router;
