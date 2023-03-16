@@ -1,9 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
 const SalaryByMonth = new mongoose.Schema({
-    month: String,
+    month: Number,
     totalWorkInMonth: Number,
     userId: {type: Schema.Types.ObjectId, ref: 'user'},
     salaryOfUser:Number,
+    year:Number
   });
   
   // Create a model for the "users" collection using the schema
