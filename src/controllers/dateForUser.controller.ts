@@ -1,6 +1,6 @@
 import { HttpStatusCode } from 'axios';
 import { NextFunction, Request, Response } from 'express';
-import Joi, { number } from 'joi';
+import Joi, { any, number } from 'joi';
 import moment from 'moment';
 import dateToCheck from '../models/DateToCheck.model';
 import ticketForUser from '../models/Ticket.model';
@@ -14,6 +14,9 @@ function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
   const timestampMoment = moment.unix(unixTimestamp);
   return moment.duration(now.diff(timestampMoment));
+}
+function inRange(x: any, min: any, max: any) {
+  return x >= min && x <= max;
 }
 
 export const createDateForUser = async (
@@ -57,11 +60,12 @@ export const createDateForUser = async (
         userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
+        lateDate: findTicket[0].lateDate,
         leisureTimeStart: findTicket[0].leisureTimeStart,
         leisureTimeEnd: findTicket[0].leisureTimeEnd,
         userId: req.body.thisUser._id,
       });
-      const currentTime = moment().format("dd/MM/YY")
+      const currentTime = moment().format('DD/MM/YY');
 
       workRecord = await workRecordForUser.create({
         dateWork: moment().unix(),
@@ -72,19 +76,23 @@ export const createDateForUser = async (
       });
     } else {
       const dateIn = findTicketforUser[0].userDateIn;
-      dateIn.push(moment().unix());
-      ticket = await ticketForUser.findByIdAndUpdate(
-        findTicketforUser[0]._id,
-        {
-          userDateIn: dateIn,
-        },
-        { new: true }
-      );
+      const dateOut = findTicketforUser[0].userDateOut;
+      if (dateIn.length === dateOut.length) {
+        dateIn.push(moment().unix());
+
+        ticket = await ticketForUser.findByIdAndUpdate(
+          findTicketforUser[0]._id,
+          {
+            userDateIn: dateIn,
+          },
+          { new: true }
+        );
+      }
     }
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       ResponseMessage.CREATE_DATE_SUCCESS,
-      ticket || {}
+      ticket || findTicketforUser[0]
     );
     return res.status(200).json(response);
   } catch (error) {
@@ -107,12 +115,30 @@ export const checkOutForUser = async (
     const findWorkRecord: any = await workRecordForUser
       .find({ userId: req.body.thisUser._id })
       .sort({ dateWork: 'descending' });
+    const leisureTimeStart = findTicketforUser[0].leisureTimeStart.split(':');
+    const leisureTimeEnd = findTicketforUser[0].leisureTimeEnd.split(':');
+
+    let setLeisureTimeStart: any = moment()
+      .set({
+        hour: Number(leisureTimeStart[0]),
+        minute: Number(leisureTimeStart[1]),
+        second: 0,
+      })
+      .unix();
+    let setLeisureTimeEnd: any = moment()
+      .set({
+        hour: Number(leisureTimeEnd[0]),
+        minute: Number(leisureTimeEnd[1]),
+        second: 0,
+      })
+      .unix();
 
     if (findTicketforUser.length > 0) {
       // Convert Date Time like 12:00 To UnixTime
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
       let ticket;
       if (diffFromNow.asHours() >= 24) {
+        console.log('asdasd');
         throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
@@ -128,13 +154,74 @@ export const checkOutForUser = async (
         await workRecordForUser.findOneAndUpdate({ userId: req.body.thisUser._id, dateWork: findWorkRecord[0].dateWork }, {
           workHour: diffInHours, isEnough: diffInHours >= 8 ? true : false
         })
-        ticket = await ticketForUser.findByIdAndUpdate(
-          findTicketforUser[0]._id,
-          {
-            userDateOut: dateIn,
-          },
-          { new: true }
-        );
+        const dateOut = findTicketforUser[0].userDateIn;
+
+        if (dateIn.length + 1 === dateOut.length) {
+
+          dateIn.push(moment().unix());
+          let diffInHours = 0;
+          for (let i = 0; i < findTicketforUser[0].userDateIn.length; i++) {
+            if (dateIn[i] !== undefined) {
+              let moment1: any = findTicketforUser[0].userDateIn[i]; // Convert Unix timestamp to Moment.js object
+              let moment2: any = dateIn[i];
+
+              if (
+                moment1 >= setLeisureTimeStart &&
+                moment1 <= setLeisureTimeEnd
+              ) {
+                if (moment2 >= setLeisureTimeEnd) {
+                  moment1 = setLeisureTimeEnd;
+                } else {
+                  moment1 = 0;
+                  moment2 = 0;
+                }
+              } else if (
+                moment2 >= setLeisureTimeStart &&
+                moment2 <= setLeisureTimeEnd
+              ) {
+                moment2 = setLeisureTimeStart;
+              }
+              if (moment1 !== 0 && moment2 !== 0) {
+                if (
+                  moment1 <= setLeisureTimeStart &&
+                  moment2 >= setLeisureTimeEnd
+                ) {
+                  setLeisureTimeStart = moment.unix(setLeisureTimeStart as any);
+                  setLeisureTimeEnd = moment.unix(setLeisureTimeEnd as any);
+                  diffInHours =
+                    diffInHours -
+                    moment
+                      .duration(setLeisureTimeEnd.diff(setLeisureTimeStart))
+                      .asHours();
+                }
+                moment1 = moment.unix(moment1 as any);
+                moment2 = moment.unix(moment2 as any);
+
+                diffInHours =
+                  diffInHours +
+                  Number(moment.duration(moment2.diff(moment1)).asHours());
+              }
+            }
+          }
+
+          await workRecordForUser.findOneAndUpdate(
+            {
+              userId: req.body.thisUser._id,
+              dateWork: findWorkRecord[0].dateWork,
+            },
+            {
+              workHour: diffInHours,
+              isEnough: diffInHours >= 8 ? true : false,
+            }
+          );
+          ticket = await ticketForUser.findByIdAndUpdate(
+            findTicketforUser[0]._id,
+            {
+              userDateOut: dateIn,
+            },
+            { new: true }
+          );
+        }
       }
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
@@ -145,7 +232,10 @@ export const checkOutForUser = async (
     } else {
       return res.status(500).json({ Data: 'Do not find Your ID' });
     }
-  } catch (error) { }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
 };
 
 export const getAllDateForUser = async (

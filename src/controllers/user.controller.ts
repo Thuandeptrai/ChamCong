@@ -35,10 +35,14 @@ export const login = async (
       throw new Error(checkValidBody.error.message);
     }
 
-    const checkExist = await UserModel.findOne({ email: req.body.username });
+    let checkExist = await UserModel.findOne({ email: req.body.username });
+    const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.username });
 
     if (!checkExist) {
-      throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
+      if (!checkExistMSNV) {
+        throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
+      }
+      checkExist = checkExistMSNV
     }
 
     const verify = await verifyPassword(req.body.password, checkExist.password);
@@ -87,19 +91,23 @@ export const signUp = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
+    const checkExistGmail = await UserModel.find({ email: req.body.email });
+    const employeeNumber = await UserModel.find({ employeeNumber: req.body.employeeNumber });
 
     // const checkExistGmail = await UserModel.find({ email: req.body.email });
     // const checkExistEmployeeNumber = await UserModel.findOne({ employeeNumber: req.body.employeeNumber })
     // const checkExistPhoneNumber = await UserModel.findOne({ phonenumber: req.body?.phonenumber })
 
 
-    const [checkExistGmail, checkExistEmployeeNumber, checkExistPhoneNumber] = await Promise.all([await UserModel.find({ email: req.body.email }), await UserModel.findOne({ employeeNumber: req.body.employeeNumber }), await UserModel.findOne({ phonenumber: req.body?.phonenumber })])
+    // const [checkExistGmail, checkExistEmployeeNumber, checkExistPhoneNumber] = await Promise.all([await UserModel.find({ email: req.body.email }), await UserModel.findOne({ employeeNumber: req.body.employeeNumber }), await UserModel.findOne({ phonenumber: req.body?.phonenumber })])
     if (checkExistGmail.length > 0) {
       throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
     }
+    if (employeeNumber.length > 0) {
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
+    }
     req.body.password = await hashPassword(req.body.password);
-    const syncUser = await UserModel.create(req.body);
-
+    await UserModel.create(req.body)
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       ResponseMessage.SIGN_UP_SUCCESS,

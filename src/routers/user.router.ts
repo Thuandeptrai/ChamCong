@@ -23,6 +23,12 @@ router.get('/:userId', authenticateforAdmin, getUserDetail)
 router.get('/initForAdmin', authenticateforAdmin, checkValidToken)
 
 //delete
-router.delete("/delete/:id", authenticateforAdmin, deleteById)
+router.post('/register', signUp)
+// update
+router.post('/:userId', authenticateforAdmin, updateUser)
+// get alll user
+router.get("/getAllUser", authenticateforAdmin, getAllUser)
+
+router.get("/delete/:id", authenticateforAdmin, deleteById)
 
 export default router;
