@@ -220,8 +220,10 @@ export const checkOutForUser = async (
             }
           }
         }
+        const getSalaryByMonth = await salaryByMonth.findOne({userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear})
+       
         await salaryByMonth.findOneAndUpdate({userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear}, {
-        
+            month: diffInHours >= 8 ?  Number(getSalaryByMonth?.totalWorkInMonth)+1 :  getSalaryByMonth?.totalWorkInMonth 
         })
         await workRecordForUser.findOneAndUpdate(
           {
