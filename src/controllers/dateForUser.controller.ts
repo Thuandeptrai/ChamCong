@@ -9,6 +9,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { responseModel } from '../utils/responseModel';
 import workRecordForUser from '../models/workList.model';
+import salaryByMonth from '../models/salaryByMonth.model';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
@@ -30,7 +31,8 @@ export const createDateForUser = async (
       .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' });
     // Convert Date Time like 12:00 To UnixTime
-
+    const findWorkByMonth = await salaryByMonth.find({userId: req.body.thisUser._id}).sort({month: 'descending'})
+    
     const diffFromNow = getTimeDiffFromNow(
       findTicketforUser.length === 0
         ? findTicket[0].dateIn
@@ -137,7 +139,6 @@ export const checkOutForUser = async (
       const diffFromNow = getTimeDiffFromNow(findTicketforUser[0].DateIn);
       let ticket;
       if (diffFromNow.asHours() >= 24) {
-        console.log('asdasd');
         throw ErrorResponse(HttpStatusCode.BadRequest, 'Can not find your id');
       } else {
         const dateIn = findTicketforUser[0].userDateOut;
@@ -214,7 +215,7 @@ export const checkOutForUser = async (
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,
         ResponseMessage.CREATE_DATE_SUCCESS,
-        findTicketforUser || {}
+        ticket || {}
       );
       return res.status(200).json(response);
     } else {
