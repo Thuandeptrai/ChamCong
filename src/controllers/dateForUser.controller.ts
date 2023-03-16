@@ -220,9 +220,9 @@ export const checkOutForUser = async (
             }
           }
         }
-        // await salaryByMonth.findOneAndUpdate({userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear}, {
+        await salaryByMonth.findOneAndUpdate({userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear}, {
         
-        // })
+        })
         await workRecordForUser.findOneAndUpdate(
           {
             userId: req.body.thisUser._id,
