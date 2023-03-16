@@ -157,17 +157,17 @@ export const checkOutForUser = async (
               moment1 >= setLeisureTimeStart &&
               moment1 <= setLeisureTimeEnd
             ) {
-              if (moment2 >= setLeisureTimeEnd) {
-                moment1 = setLeisureTimeEnd;
-              } else {
-                moment1 = 0;
-                moment2 = 0;
-              }
-            } else if (
-              moment2 >= setLeisureTimeStart &&
-              moment2 <= setLeisureTimeEnd
-            ) {
-              moment2 = setLeisureTimeStart;
+                if (moment2 >= setLeisureTimeEnd) {
+                  moment1 = setLeisureTimeEnd;
+                } else {
+                  moment1 = 0;
+                  moment2 = 0;
+                }
+              } else if (
+                moment2 >= setLeisureTimeStart &&
+                moment2 <= setLeisureTimeEnd
+              ) {
+                moment2 = setLeisureTimeStart;
             }
             if (moment1 !== 0 && moment2 !== 0) {
               if (
