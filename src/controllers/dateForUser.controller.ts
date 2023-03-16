@@ -10,15 +10,14 @@ import { ResponseMessage } from '../utils/ResonseMessage';
 import { responseModel } from '../utils/responseModel';
 import workRecordForUser from '../models/workList.model';
 import salaryByMonth from '../models/salaryByMonth.model';
+import { calculateWorkDate } from '../utils/calculatedate';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
   const timestampMoment = moment.unix(unixTimestamp);
   return moment.duration(now.diff(timestampMoment));
 }
-function inRange(x: any, min: any, max: any) {
-  return x >= min && x <= max;
-}
+
 
 export const createDateForUser = async (
   req: Request,
@@ -28,30 +27,36 @@ export const createDateForUser = async (
   try {
     const getCurrentMonth = moment().month()
     const getCurrentYear = moment().year()
+    const getCurrentDay = moment().date()
+    const getdate = calculateWorkDate( getCurrentMonth, getCurrentYear)
     const findTicket: any = await dateToCheck.find({});
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' });
+    
     // Convert Date Time like 12:00 To UnixTime
     const findWorkByMonth = await salaryByMonth.find({userId: req.body.thisUser._id}).sort({month: 'descending'})
     if(findWorkByMonth.length !== 0)
     {
-       
-      const getMonth  = moment.unix(Number(findWorkByMonth[0].month)).format("MM")
-      if(Number(getMonth) !== getCurrentMonth){
+      if(Number(getCurrentMonth) !==Number(findWorkByMonth[0].month) && Number(getCurrentYear)  === Number(findWorkByMonth[0].year)){
         await salaryByMonth.create({
           month:getCurrentMonth,
           year: getCurrentYear,
+          totalWorkInMonth:0,
           salaryOfUser: 0,
-          userId:req.body.thisUser._id
+          userId:req.body.thisUser._id,
+          rateWorkByMonth: getdate
+        
         })
       }
     }else{
       await salaryByMonth.create({
         month:getCurrentMonth,
         year: getCurrentYear,
+        totalWorkInMonth:0,
         salaryOfUser: 0,
-        userId:req.body.thisUser._id
+        userId:req.body.thisUser._id,
+        rateWorkByMonth: getdate
       })
     }
 
@@ -133,6 +138,8 @@ export const checkOutForUser = async (
   next: NextFunction
 ) => {
   try {
+    const getCurrentMonth = moment().month()
+    const getCurrentYear = moment().year()
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' }).populate('userId');
@@ -214,7 +221,9 @@ export const checkOutForUser = async (
             }
           }
         }
-
+        // await salaryByMonth.findOneAndUpdate({userId: req.body.thisUser._id, month: getCurrentMonth, year: getCurrentYear}, {
+        
+        // })
         await workRecordForUser.findOneAndUpdate(
           {
             userId: req.body.thisUser._id,
