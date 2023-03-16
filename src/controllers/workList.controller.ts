@@ -17,30 +17,28 @@ import workRecordForUser from '../models/workList.model';
 export const getAllWorkListByMonth = async (
     req: Request,
     res: Response,
-    next: NextFunction) =>{
-        const month = req.query.month;
-        const Year = req.query.year
-        try{
-            const workList = await workRecordForUser.find({})
-            const dataList = []
-            
-            for(let i = 0; i < workList.length; i++ )
-            {
-                const time : any  = workList[i].month?.split("/")
-             
-                if( Number(time[1]) === Number(month)  && Number(time[2]) === Number(Year))
-                {
-                    dataList.push(workList[i])
-                }
-               
+    next: NextFunction) => {
+    const month = req.query.month;
+    const Year = req.query.year
+    try {
+        const workList = await workRecordForUser.find({})
+        const dataList = []
+
+        for (let i = 0; i < workList.length; i++) {
+            const time: any = workList[i].month?.split("/")
+
+            if (Number(time[1]) === Number(month) && Number(time[2]) === Number(Year)) {
+                dataList.push(workList[i])
             }
-            const response = responseModel(
-                RESPONSE_STATUS.SUCCESS,
-                ResponseMessage.CREATE_DATE_SUCCESS,
-                dataList || {}
-              );
-              res.status(200).json(response)
-        }catch(error) {
-            next(error);
+
         }
+        const response = responseModel(
+            RESPONSE_STATUS.SUCCESS,
+            ResponseMessage.CREATE_DATE_SUCCESS,
+            dataList || {}
+        );
+        res.status(200).json(response)
+    } catch (error) {
+        next(error);
     }
+}
