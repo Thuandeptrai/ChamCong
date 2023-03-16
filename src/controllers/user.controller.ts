@@ -34,30 +34,25 @@ export const login = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
+    const checkExist = await UserModel.findOne({ $or: [{ phonenumber: req.body.username }, { employeeNumber: req.body.username }] });
+    if (checkExist) {
+      const verify = await verifyPassword(req.body.password, checkExist.password);
 
-    let checkExist = await UserModel.findOne({ email: req.body.username });
-    const checkExistMSNV = await UserModel.findOne({ employeeNumber: req.body.username });
-
-    if (!checkExist) {
-      if (!checkExistMSNV) {
-        throw ErrorResponse(401, ResponseMessage.USER_NOT_EXIST);
+      if (!verify) {
+        throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
       }
-      checkExist = checkExistMSNV
+
+      const accessToken = jwt.sign(
+        { user_id: checkExist._id },
+        config.auth.jwtSecretKey,
+        { expiresIn: '1d' }
+      );
+
+      return res.status(HttpStatusCode.Ok).json(accessToken);
+    } else {
+      return res.status(HttpStatusCode.NotFound).json({ status: 0, message: "người dùng không tồn tại", data: {} });
+
     }
-
-    const verify = await verifyPassword(req.body.password, checkExist.password);
-
-    if (!verify) {
-      throw ErrorResponse(401, ResponseMessage.LOGIN_FAILED);
-    }
-
-    const accessToken = jwt.sign(
-      { user_id: checkExist._id },
-      config.auth.jwtSecretKey,
-      { expiresIn: '1d' }
-    );
-
-    return res.status(HttpStatusCode.Ok).json(accessToken);
   } catch (error: any) {
     next(error);
   }
@@ -76,29 +71,33 @@ export const signUp = async (
     name: Joi.string().required(),
     password: Joi.string().min(6).required(),
     password2: Joi.ref('password'),
-    employeeNumber: Joi.number().required(),
+    employeeNumber: Joi.string().required(),
     bankName: Joi.string().required(),
     userBankNumber: Joi.string().required(),
     salary: Joi.number().required(),
+    salaryReate: Joi.number().required(),
     email: Joi.string().email(),
     department: Joi.string(),
     isAdmin: Joi.string().required(),
     phonenumber: Joi.string().required(),
-    thisUser: Joi.object()
+    thisUser: Joi.object(),
+    verified: Joi.allow()
   });
   try {
     const checkValidBody = schema.validate(req.body);
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
-    const [checkExistEmployeeNumber, checkExistPhoneNumber] = await Promise.all(
-      [await UserModel.findOne({ employeeNumber: req.body.employeeNumber }), await UserModel.findOne({ phonenumber: req.body?.phonenumber })]
-    )
-    if (checkExistEmployeeNumber === null) {
-      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
+    const checkExistEmployeeNumber = await UserModel.findOne({ employeeNumber: req.body.employeeNumber })
+    const checkExistPhoneNumber = await UserModel.findOne({ phonenumber: req.body?.phonenumber })
+
+
+    if (checkExistEmployeeNumber) {
+
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMPLOYMENT_EXIST);
     }
-    if (checkExistPhoneNumber === null) {
-      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_EMAIL_EXIST);
+    if (checkExistPhoneNumber) {
+      throw ErrorResponse(400, ResponseMessage.SIGN_UP_FAILED_PHONE_NUMBER_EXIST);
     }
     req.body.password = await hashPassword(req.body.password);
     await UserModel.create(req.body)
