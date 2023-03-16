@@ -9,6 +9,7 @@ import { ErrorResponse } from '../utils/ErrorResponse';
 import { ResponseMessage } from '../utils/ResonseMessage';
 import { responseModel } from '../utils/responseModel';
 import workRecordForUser from '../models/workList.model';
+import salaryByMonth from '../models/salaryByMonth.model';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
@@ -32,6 +33,26 @@ export const createDateForUser = async (
       .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' });
     // Convert Date Time like 12:00 To UnixTime
+    const findWorkByMonth = await salaryByMonth.find({ userId: req.body.thisUser._id }).sort({ month: 'descending' })
+    if (findWorkByMonth.length !== 0) {
+
+      const getMonth = moment.unix(Number(findWorkByMonth[0].month)).format("MM")
+      if (Number(getMonth) !== getCurrentMonth) {
+        await salaryByMonth.create({
+          month: getCurrentMonth,
+          year: getCurrentYear,
+          salaryOfUser: 0,
+          userId: req.body.thisUser._id
+        })
+      }
+    } else {
+      await salaryByMonth.create({
+        month: getCurrentMonth,
+        year: getCurrentYear,
+        salaryOfUser: 0,
+        userId: req.body.thisUser._id
+      })
+    }
 
     const diffFromNow = getTimeDiffFromNow(
       findTicketforUser.length === 0
