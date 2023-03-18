@@ -141,7 +141,8 @@ export const checkValidToken = async (
   next: NextFunction
 ) => {
   try {
-    return res.status(HttpStatusCode.Ok).json(ResponseMessage.LOGIN_SUCCESS);
+    const user = await UserModel.findOne(req.body.thisUser._id)
+    return res.status(HttpStatusCode.Ok).json(user);
   } catch (error) {
     console.log(error);
     next(error);
