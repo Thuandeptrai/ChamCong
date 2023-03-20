@@ -15,13 +15,11 @@ const UserSchema: Schema = new Schema(
     userBankNumber: { type: String, require: true },
     salary: { type: Number, require: true },
     phonenumber: { type: String, required: false, default: '' },
-    access: { type: Array, required: false, default: [] },
-    accesstoken: { type: String, required: false },
-    refreshtoken: { type: String, required: false },
-    isNew:{type:String , require: false},
+    
+    isNew:{type:Boolean , require: false},
     isAdmin: { type: String, default: false, required: false },
     department: { type: String, default: false, required: false },
-    salaryRate: { type: Number, required: false },
+    
     verified: {
       type: Boolean,
       default: true
