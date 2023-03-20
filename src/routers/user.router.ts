@@ -16,7 +16,7 @@ router.put('update/:userId', authenticate, updateUser)
 router.get("/getAllUser", authenticate, getAllUser)
 //get detail
 
-router.get('/:userId', authenticate, getUserDetail)
+router.get('/:userId', authenticateforAdmin, getUserDetail)
 
 //init
 router.get('/initForAdmin', authenticateforAdmin, checkValidToken)
