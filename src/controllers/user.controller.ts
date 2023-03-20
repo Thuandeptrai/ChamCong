@@ -141,7 +141,9 @@ export const checkValidToken = async (
   next: NextFunction
 ) => {
   try {
-    return res.status(HttpStatusCode.Ok).json(ResponseMessage.LOGIN_SUCCESS);
+    const findUser = await UserModel.findOne(req.body.thisUser._id)
+
+    return res.status(HttpStatusCode.Ok).json(findUser);
   } catch (error) {
     console.log(error);
     next(error);
@@ -264,6 +266,12 @@ export const getAllUser = async (
   next: NextFunction
 ) => {
   try {
+    const user = await UserModel.findById(req.body.thisUser._id)
+    let response
+    let users  = []
+    if(user?.isAdmin === "True")
+    {
+
     const { name, department } = req.query;
     const objSearch: { [key: string]: any } = {};
     if (name) {
@@ -273,14 +281,22 @@ export const getAllUser = async (
       objSearch["department"] = department
     }
 
-    console.log(req.body?.thisUser)
-    const users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
-    console.log(users)
-    const response = responseModel(
+     users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
+     
+     response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       'Get All User Success',
-      users
+      users,
+      users.length
     );
+  }else{
+    
+    response = responseModel(
+      RESPONSE_STATUS.SUCCESS,
+      'Get All User Success',
+      user
+    );
+  }
 
     return res.status(200).json(response);
   } catch (error) {
