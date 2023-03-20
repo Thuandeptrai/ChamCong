@@ -34,7 +34,9 @@ export const login = async (
     if (checkValidBody.error) {
       throw new Error(checkValidBody.error.message);
     }
+    console.log(req.body.username)
     const checkExist = await UserModel.findOne({ $or: [{ phonenumber: req.body.username }, { employeeNumber: req.body.username }] });
+    console.log(checkExist)
     if (checkExist) {
       const verify = await verifyPassword(req.body.password, checkExist.password);
 
