@@ -269,20 +269,22 @@ export const getAllUser = async (
     const user = await UserModel.findById(req.body.thisUser._id)
     let response
     let users  = []
+    console.log(req.query)
     if(user?.isAdmin === "True")
     {
 
-    const { name, department } = req.query;
+    const { q, department } = req.query;
+    
     const objSearch: { [key: string]: any } = {};
-    if (name) {
-      objSearch["name"] = { $regex: ".*" + name + ".*", $options: "i", }
+    if (q) {
+      objSearch["name"] = { $regex: ".*" + q + ".*", $options: "i", }
     }
     if (department && department !== "all") {
       objSearch["department"] = department
     }
 
-     users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
-     
+     users = await UserModel.find(objSearch).sort({ createdAt: -1 });
+ //   console.log(users)
      response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       'Get All User Success',
