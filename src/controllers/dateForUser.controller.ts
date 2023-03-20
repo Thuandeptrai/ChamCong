@@ -89,7 +89,7 @@ export const createDateForUser = async (
         userDateIn: [moment().unix()],
         DateIn: Number(unixDateIn),
         DateOut: Number(unixDateOut),
-        isLate: unixDateIn < moment().unix() ? false : true,
+        isLate: unixDateIn < moment().unix() ? true : false,
         lateDate: findTicket[0].lateDate,
         leisureTimeStart: findTicket[0].leisureTimeStart,
         leisureTimeEnd: findTicket[0].leisureTimeEnd,
