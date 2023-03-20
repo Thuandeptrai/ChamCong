@@ -34,7 +34,7 @@ export const authenticate = async (
         return res.status(401).send({ message: 'Invalid token' });
       }
       try {
-        const thisUser = await userModel.findById(decoded.user_id);
+        const thisUser = await userModel.findOne({_id: decoded.user_id});
         req.body.thisUser = thisUser;
         next();
       } catch (error) {

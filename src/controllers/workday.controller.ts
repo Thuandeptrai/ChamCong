@@ -10,14 +10,25 @@ export const getWorkDayByUserId = async (
   res: Response,
   next: NextFunction
 ) => {
-  const UserId = req.params.userId;
+  let UserId = req.params.userId;
+  
+  if(req.body.thisUser.isAdmin !== "True")
+  {
+
+    UserId = req.body.thisUser._id
+  }
+  
   try {
-    const getAllWorkDay = await ticketForUser.find({ userId: UserId }).sort({DateIn: 'descending'});
-    const s = '3'
-      const regex = new RegExp(s, 'i') 
-    const getWorkday : any = await  workRecordForUser.find({ "month": { "$regex": regex }, userId: UserId})
-    console.log(getWorkday)
-   const  response = responseModel(
+    const getAllWorkDay = await ticketForUser
+      .find({userId: UserId})
+      .sort({ DateIn: 'descending' });
+    const s = '3';
+    const regex = new RegExp(s, 'i');
+    const getWorkday: any = await workRecordForUser.find({
+      month: { $regex: regex }, userId: UserId,
+    });
+    console.log(getWorkday);
+    const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       'Get WorkDay User Success',
       getAllWorkDay,
