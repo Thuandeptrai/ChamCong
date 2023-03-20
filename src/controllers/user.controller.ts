@@ -273,9 +273,9 @@ export const getAllUser = async (
       objSearch["department"] = department
     }
 
-    console.log(req.body?.thisUser)
+    // console.log(req.body?.thisUser)
     const users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
-    console.log(users)
+    // console.log(users)
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
       'Get All User Success',
@@ -293,6 +293,8 @@ export const deleteById = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(`sadkljfhg`)
+
   try {
     console.log(`adsads`, req?.params?.id);
     const users = await UserModel.findByIdAndDelete(req.params.id);
