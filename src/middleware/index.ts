@@ -49,7 +49,7 @@ export const authenticateforAdmin = async (
   res: Response,
   next: NextFunction
 ) => {
-
+console.log(`vao sádhfkajsdf`)
   const authorization = req.headers['authorization'];
   console.log('authorization:', authorization)
   if (!authorization) {

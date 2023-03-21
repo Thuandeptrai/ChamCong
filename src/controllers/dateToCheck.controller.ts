@@ -88,8 +88,8 @@ export const getAllDate = async (
   const schema = Joi.object({
     dateIn: Joi.string(),
     lateDate: Joi.string(),
-    leisureTimeStart:Joi.string(),
-    leisureTimeEnd:Joi.string(),
+    leisureTimeStart: Joi.string(),
+    leisureTimeEnd: Joi.string(),
     dateOut: Joi.string(),
   });
   const id = req.params.DateId;
@@ -99,6 +99,7 @@ export const getAllDate = async (
       throw new Error(checkValidBody.error.message);
     }
     const ticket = await dateToCheck.find({})
+    console.log('ticket:', ticket)
     if (ticket) {
       const response = responseModel(
         RESPONSE_STATUS.SUCCESS,

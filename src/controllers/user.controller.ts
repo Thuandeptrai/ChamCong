@@ -26,7 +26,7 @@ export const login = async (
   next: NextFunction
 ) => {
   const schema = Joi.object({
-    username: Joi.string().min(6).max(32).required(),
+    username: Joi.string().max(32).required(),
     password: Joi.string().min(6).max(32).required(),
   });
   try {
@@ -35,6 +35,7 @@ export const login = async (
       throw new Error(checkValidBody.error.message);
     }
     const checkExist = await UserModel.findOne({ $or: [{ phonenumber: req.body.username }, { employeeNumber: req.body.username }] });
+    console.log('checkExist:', checkExist)
     if (checkExist) {
       const verify = await verifyPassword(req.body.password, checkExist.password);
 
@@ -63,19 +64,16 @@ export const signUp = async (
   res: Response,
   next: NextFunction
 ) => {
-
-  // req.body.password = "ádasdasd"
-  // req.body.password2 = "ádasdasd"
-
+  req.body.password = "123123";
+  req.body.password2 = "123123";
   const schema = Joi.object({
     name: Joi.string().required(),
     password: Joi.string().min(6).required(),
     password2: Joi.ref('password'),
     employeeNumber: Joi.string().required(),
-    bankName: Joi.string().required(),
+    bankName: Joi.string(),
     userBankNumber: Joi.string().required(),
     salary: Joi.number().required(),
-    salaryReate: Joi.number().required(),
     email: Joi.string().email(),
     department: Joi.string(),
     isAdmin: Joi.string().required(),
@@ -120,6 +118,7 @@ export const getUserDetail = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(`vao dayfsdfad`)
   try {
     const userDetail = await UserModel.findById(req.params?.userId).sort({ createdAt: -1 });
 
@@ -141,6 +140,7 @@ export const checkValidToken = async (
   next: NextFunction
 ) => {
   try {
+
     const findUser = await UserModel.findOne(req.body.thisUser._id)
 
     return res.status(HttpStatusCode.Ok).json(findUser);
@@ -227,9 +227,9 @@ export const updateUser = async (
   res: Response,
   next: NextFunction
 ) => {
-
   const userId = req.params.userId;
   const schema = Joi.object({
+    id: Joi.string(),
     name: Joi.string(),
     employeeNumber: Joi.number(),
     bankName: Joi.string().max(32),
@@ -265,38 +265,48 @@ export const getAllUser = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(`sdfasdf`, req.query)
+  const { q, department, role } = req.query;
   try {
     const user = await UserModel.findById(req.body.thisUser._id)
     let response
-    let users  = []
-    if(user?.isAdmin === "True")
-    {
+    let users = []
+    if (user?.isAdmin === "True") {
 
-    const { name, department } = req.query;
-    const objSearch: { [key: string]: any } = {};
-    if (name) {
-      objSearch["name"] = { $regex: ".*" + name + ".*", $options: "i", }
-    }
-    if (department && department !== "all") {
-      objSearch["department"] = department
-    }
 
-     users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
-     
-     response = responseModel(
-      RESPONSE_STATUS.SUCCESS,
-      'Get All User Success',
-      users,
-      users.length
-    );
-  }else{
-    
-    response = responseModel(
-      RESPONSE_STATUS.SUCCESS,
-      'Get All User Success',
-      user
-    );
-  }
+
+      const objSearch: { [key: string]: any } = {};
+      if (q) {
+        objSearch["name"] = { $regex: ".*" + q + ".*", $options: "i", }
+      }
+      if (department) {
+        objSearch["department"] = department;
+      }
+      if (role) {
+        objSearch["isAdmin"] = role
+      }
+      console.log(`vao day`)
+      console.log('department:', department)
+      console.log('role:', role)
+      console.log('objSearch:', objSearch)
+
+      users = await UserModel.find({ $and: [objSearch] }).sort({ createdAt: -1 });
+      // console.log('users:', users)
+
+      response = responseModel(
+        RESPONSE_STATUS.SUCCESS,
+        'Get All User Success',
+        users,
+        users.length
+      );
+    } else {
+
+      response = responseModel(
+        RESPONSE_STATUS.SUCCESS,
+        'Get All User Success',
+        user
+      );
+    }
 
     return res.status(200).json(response);
   } catch (error) {
@@ -310,7 +320,6 @@ export const deleteById = async (
   next: NextFunction
 ) => {
   try {
-    console.log(`adsads`, req?.params?.id);
     const users = await UserModel.findByIdAndDelete(req.params.id);
     const response = responseModel(
       RESPONSE_STATUS.SUCCESS,
