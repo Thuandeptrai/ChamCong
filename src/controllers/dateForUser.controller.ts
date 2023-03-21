@@ -11,6 +11,7 @@ import { responseModel } from '../utils/responseModel';
 import workRecordForUser from '../models/workList.model';
 import salaryByMonth from '../models/salaryByMonth.model';
 import { calculateWorkDate } from '../utils/calculatedate';
+import userModel from '../models/user.model';
 
 function getTimeDiffFromNow(unixTimestamp: number): moment.Duration {
   const now = moment();
@@ -33,17 +34,18 @@ export const createDateForUser = async (
     const findTicketforUser: any = await ticketForUser
       .find({ userId: req.body.thisUser._id })
       .sort({ DateIn: 'descending' });
-    
+    const getCurrentUser : any = await userModel.findOne(req.body.thisUser._id)
+    console.log(getCurrentUser)
     // Convert Date Time like 12:00 To UnixTime
     const findWorkByMonth = await salaryByMonth.find({userId: req.body.thisUser._id}).sort({month: 'descending'})
     if(findWorkByMonth.length !== 0)
     {
-      if(Number(getCurrentMonth) !==Number(findWorkByMonth[0].month) && Number(getCurrentYear)  === Number(findWorkByMonth[0].year)){
+      if(Number(getCurrentMonth) !==Number(findWorkByMonth[0].month as any-1) && Number(getCurrentYear)  === Number(findWorkByMonth[0].year)){
         await salaryByMonth.create({
-          month: getCurrentMonth,
+          month: getCurrentMonth+1,
           year: getCurrentYear,
           totalWorkInMonth:0,
-          salaryOfUser: 0,
+          salaryOfUser: getCurrentUser.salary,
           userId:req.body.thisUser._id,
           rateWorkByMonth: getdate
         
@@ -51,10 +53,10 @@ export const createDateForUser = async (
       }
     } else {
       await salaryByMonth.create({
-        month: getCurrentMonth,
+        month: getCurrentMonth+1,
         year: getCurrentYear,
         totalWorkInMonth:0,
-        salaryOfUser: 0,
+        salaryOfUser: getCurrentUser.salary,
         userId:req.body.thisUser._id,
         rateWorkByMonth: getdate
       })
@@ -96,12 +98,11 @@ export const createDateForUser = async (
         userId: req.body.thisUser._id,
       });
       const currentTime = moment().format('DD/MM/YY');
-
       workRecord = await workRecordForUser.create({
         dateWork: moment().unix(),
         workHour: 0,
         userId: req.body.thisUser._id,
-        month: currentTime,
+        month: moment().format('DD/MM/YY'),
         isEnough: false,
       });
     } else {

@@ -16,16 +16,20 @@ export const getWorkDayByUserId = async (
   {
 
     UserId = req.body.thisUser._id
+  }else{
+    if(UserId === "undefined")
+    {
+    UserId = req.body.thisUser._id
+
+    }
   }
   
   try {
     const getAllWorkDay = await ticketForUser
       .find({userId: UserId})
       .sort({ DateIn: 'descending' });
-    const s = '3';
-    const regex = new RegExp(s, 'i');
     const getWorkday: any = await workRecordForUser.find({
-      month: { $regex: regex }, userId: UserId,
+       userId: UserId,
     });
     console.log(getWorkday);
     const response = responseModel(
