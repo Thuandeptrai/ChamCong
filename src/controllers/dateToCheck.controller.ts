@@ -48,6 +48,7 @@ export const updateDate = async (
   res: Response,
   next: NextFunction
 ) => {
+  console.log(`dfkjhasjkhe`)
   const schema = Joi.object({
     dateIn: Joi.string(),
     lateDate: Joi.string(),

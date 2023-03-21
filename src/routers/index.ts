@@ -19,5 +19,4 @@ const useRoutes = (app: any) => {
   app.use(`${version.v1}/dateForUser`, dateForUserRouter);
 
 };
-
 export default useRoutes;

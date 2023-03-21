@@ -9,7 +9,7 @@ router.get('/initForUser', authenticate, checkValidToken)
 
 // dang ky  cho admin
 // update
-router.put('update/:userId', authenticate, updateUser)
+router.put('/update/:userId', authenticate, updateUser)
 
 // get all user
 
