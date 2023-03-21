@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 
 export interface UserType {
+  salary:number
   object_id: number;
   email: string;
   password: string;
